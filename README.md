@@ -1,6 +1,6 @@
-# vizbee-react-native-ftv-atv-demo-app
+# vizbee-react-native-ftv-atv-sample-app
 
-This README provides instructions on how to set up and run the vizbee-react-native-ftv-atv-demo-app.
+This README provides instructions on how to set up and run the vizbee-react-native-ftv-atv-sample-app.
 
 ## Getting Started
 
@@ -12,10 +12,10 @@ Clone the repository using one of the following commands:
 
 ```bash
 # Using SSH
-git clone git@github.com:ClaspTV/vizbee-react-native-ftv-atv-demo-app.git
+git clone git@github.com:ClaspTV/vizbee-react-native-ftv-atv-sample-app.git
 
 # OR using HTTPS
-git clone https://github.com/ClaspTV/vizbee-react-native-ftv-atv-demo-app.git
+git clone https://github.com/ClaspTV/vizbee-react-native-ftv-atv-sample-app.git
 ```
 
 ### 2. Install Dependencies
@@ -23,7 +23,7 @@ git clone https://github.com/ClaspTV/vizbee-react-native-ftv-atv-demo-app.git
 After cloning the repository, navigate to the project directory and install the necessary dependencies:
 
 ```bash
-cd vizbee-react-native-ftv-atv-demo-app
+cd vizbee-react-native-ftv-atv-sample-app
 # using npm
 npm install
 
