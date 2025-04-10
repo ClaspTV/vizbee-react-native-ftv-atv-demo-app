@@ -15,7 +15,7 @@
     "react": "18.3.1",
     "react-native": "0.75.3",
     "react-native-video": "^6.6.1",
-    "react-native-vizbee-receiver-sdk": "^0.0.24"
+    "react-native-vizbee-receiver-sdk": "^0.0.25"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

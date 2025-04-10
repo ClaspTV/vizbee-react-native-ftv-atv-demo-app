@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {View, StyleSheet} from 'react-native';
 //@ts-ignore
-import {VizbeeManager} from 'react-native-vizbee-receiver-sdk';
+import {VizbeeManager, VizbeeOptions} from 'react-native-vizbee-receiver-sdk';
 import AppDelegate from './src/vizbee/AppDelegate';
 import MainScreen, {Video} from './src/MainScreen';
 import VideoPlayer from './src/VideoPlayer';
@@ -14,7 +14,14 @@ const App = () => {
 
   useEffect(() => {
     appDelegateRef.current = new AppDelegate();
-    VizbeeManager.init(VIZBEE_APPID, appDelegateRef.current);
+    // Or creating with constructor
+    const options = new VizbeeOptions({
+      loggingPreference: VizbeeOptions.LoggingPreference.ENABLE_VERBOSE_LEVEL,
+      //configServiceProxyHost: 'cast-config.plex.tv',
+      //shouldInitInBackground: false, // default false
+      // customMetricsAttributes: { appVersion: '1.2.3' },
+    }); 
+    VizbeeManager.init(VIZBEE_APPID, appDelegateRef.current, options);
     appDelegateRef.current.setOnVideoStartCallback(handleVideoStart);
     appDelegateRef.current.setIsAppReady(true);
 
