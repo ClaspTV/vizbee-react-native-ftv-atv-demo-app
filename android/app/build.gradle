@@ -121,10 +121,10 @@ android {
 dependencies {
 
      // Vizbee - Android TV
-   androidTVImplementation "tv.vizbee:androidtv-receiver-sdk:4.2.4-rc.2"
+   androidTVImplementation "tv.vizbee:androidtv-receiver-sdk:4.2.4"
    
    // Vizbee - Fire TV
-   fireTVImplementation "tv.vizbee:firetv-receiver-sdk:4.2.7-rc1-config-proxy"
+   fireTVImplementation "tv.vizbee:firetv-receiver-sdk:4.2.7"
 
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
