@@ -12,10 +12,19 @@
     "fire-tv": "react-native run-android --mode=fireTVdebug"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^2.1.1",
+    "@react-navigation/native": "^7.1.17",
+    "@react-navigation/stack": "^7.4.7",
+    "events": "^3.3.0",
     "react": "18.3.1",
     "react-native": "0.75.3",
+    "react-native-device-info": "^14.0.4",
+    "react-native-gesture-handler": "2.24.0",
+    "react-native-safe-area-context": "^5.6.0",
+    "react-native-screens": "^4.13.1",
     "react-native-video": "^6.6.1",
-    "react-native-vizbee-receiver-sdk": "^0.0.25"
+    "react-native-vizbee-homesso-receiver-sdk": "file:../react-native-vizbee-homesso-receiver-sdk/react-native-vizbee-homesso-receiver-sdk-1.0.0.tgz",
+    "react-native-vizbee-receiver-sdk": "file:../react-native-vizbee-receiver-sdk/react-native-vizbee-receiver-sdk-0.0.26.tgz"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

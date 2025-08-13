@@ -24,12 +24,12 @@
             <category android:name="android.intent.category.LAUNCHER" />
             <category android:name="android.intent.category.DEFAULT" />
         </intent-filter>
-<intent-filter>
-        <action android:name="android.intent.action.VIEW"/>
-        <category android:name="android.intent.category.DEFAULT"/>
-        <category android:name="android.intent.category.BROWSABLE"/>
-        <data android:scheme="com.reactnativeftvatvdemoapp"/>
-      </intent-filter>
+        <intent-filter>
+          <action android:name="android.intent.action.VIEW"/>
+          <category android:name="android.intent.category.DEFAULT"/>
+          <category android:name="android.intent.category.BROWSABLE"/>
+          <data android:scheme="com.reactnativeftvatvdemoapp"/>
+        </intent-filter>
         <!-- To launch the app -->
             <intent-filter>
                 <action android:name="com.google.android.gms.cast.tv.action.LAUNCH" />

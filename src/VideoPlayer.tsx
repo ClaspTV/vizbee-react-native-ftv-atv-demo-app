@@ -3,25 +3,46 @@ import {StyleSheet, View, TouchableOpacity, Text} from 'react-native';
 import Video, {VideoRef} from 'react-native-video';
 // @ts-ignore
 import {VizbeeManager} from 'react-native-vizbee-receiver-sdk';
-import {PlayerDelegate} from './vizbee/PlayerDelegate';
-import {Video as VideoData} from './MainScreen';
+import {PlayerDelegate} from './PlayerDelegate';
+import {useRoute, useNavigation, RouteProp} from '@react-navigation/native';
+import VideoEvents from './utils/VideoEvents';
 
-const VideoPlayer = ({
-  video,
-  onClose,
-}: {
-  video: VideoData;
-  onClose: () => void;
-}) => {
+interface VideoInfo {
+  videoURL?: string;
+  url?: string;
+  title?: string;
+  imageURL?: string;
+  guid?: string;
+}
+
+const VideoPlayer = () => {
+  const route = useRoute<RouteProp<any>>();
+  const navigation = useNavigation();
   const videoRef = useRef<VideoRef>(null);
   const playerDelegateRef = useRef<PlayerDelegate | null>(null);
 
+  // Determine video source from either props or navigation params
+  const video: VideoInfo = {
+    videoURL: route.params?.videoUrl,
+    title: route.params?.title,
+    imageURL: route.params?.imageUrl,
+    guid: route.params?.guid,
+  };
+
+  let position = route.params?.position || 0;
+
+  // Handle close from both prop callback and navigation
+  const handleClose = () => {
+    navigation.goBack();
+  };
+
   useEffect(() => {
-    if (videoRef.current) {
+    if (videoRef.current && video) {
+      console.log('Initializing PlayerDelegate with video:', video);
       playerDelegateRef.current = new PlayerDelegate(
         videoRef.current,
         video,
-        onClose,
+        handleClose,
       );
       VizbeeManager.setPlayerDelegate(playerDelegateRef.current);
     }
@@ -31,8 +52,9 @@ const VideoPlayer = ({
         VizbeeManager.removePlayerDelegate();
         playerDelegateRef.current = null;
       }
+      VideoEvents.emitVideoStopped();
     };
-  }, [video, onClose]);
+  }, [video]);
 
   const onProgress = (data: {currentTime: number}) => {
     if (playerDelegateRef.current) {
@@ -41,6 +63,7 @@ const VideoPlayer = ({
   };
 
   const onLoad = (data: {duration: number}) => {
+    console.log('Video loaded:', data);
     if (playerDelegateRef.current) {
       playerDelegateRef.current.videoDuration = data.duration;
       playerDelegateRef.current.updatePlaybackState({
@@ -48,14 +71,16 @@ const VideoPlayer = ({
         started: true,
         ended: false,
       });
-      if (video.startPosition > 0 && data.duration) {
-        playerDelegateRef.current.onSeek(video.startPosition);
-        video.startPosition = 0;
-      }
     }
+    if (position > 0 && videoRef.current) {
+      videoRef.current.seek(position / 1000 - 2);
+      position = 0; // Reset position to avoid seeking again
+    }
+    VideoEvents.emitVideoStarted();
   };
 
   const onBuffer = ({isBuffering}: {isBuffering: boolean}) => {
+    console.log('Buffer state:', isBuffering);
     if (playerDelegateRef.current) {
       playerDelegateRef.current.updatePlaybackState({
         loading: isBuffering,
@@ -64,6 +89,7 @@ const VideoPlayer = ({
   };
 
   const onEnd = () => {
+    console.log('Video ended');
     if (playerDelegateRef.current) {
       playerDelegateRef.current.updatePlaybackState({
         started: false,
@@ -71,9 +97,11 @@ const VideoPlayer = ({
         playing: false,
       });
     }
+    VideoEvents.emitVideoStopped();
   };
 
   const onPlaybackStateChanged = (data: {isPlaying: boolean}) => {
+    console.log('Playback state changed:', data);
     if (playerDelegateRef.current) {
       playerDelegateRef.current.updatePlaybackState({
         playing: data.isPlaying,
@@ -81,12 +109,24 @@ const VideoPlayer = ({
     }
   };
 
+  const onError = (error: any) => {
+    console.error('Video playback error:', error);
+    VideoEvents.emitVideoStopped();
+    // Handle error appropriately
+  };
+
+  if (!video) {
+    console.log('No video data available');
+    handleClose();
+    return null;
+  }
+
   return (
     <View style={styles.playerContainer}>
       <Video
         ref={videoRef}
         source={{
-          uri: video.videoURL,
+          uri: video.videoURL || video.url,
           metadata: {
             title: video.title || '',
             imageUri: video.imageURL || '',
@@ -98,10 +138,11 @@ const VideoPlayer = ({
         onLoad={onLoad}
         onBuffer={onBuffer}
         onEnd={onEnd}
+        onError={onError}
         onProgress={onProgress}
         onPlaybackStateChanged={onPlaybackStateChanged}
       />
-      <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+      <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
         <Text style={styles.closeButtonText}>Close</Text>
       </TouchableOpacity>
     </View>
