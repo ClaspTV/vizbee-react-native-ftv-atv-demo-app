@@ -96,8 +96,6 @@ export class MyAppVizbeeAppDelegate
         this.signInCheckInterval = setInterval(() => {
           elapsedTime += 1000;
 
-          const videoRequiresAuth = videoInfo.requiresAuthentication || false;
-
           if (this.appLifecycleAdapter.getIsSignedIn()) {
             // User has signed in, proceed with deeplink
             clearInterval(this.signInCheckInterval);

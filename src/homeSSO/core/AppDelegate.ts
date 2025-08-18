@@ -152,8 +152,6 @@ export class AppDelegate
 
         this.signInCheckInterval = setInterval(() => {
           elapsedTime += 1000;
-          const videoInfoRequiresAuthentication =
-            videoInfo.requiresAuthentication || false;
 
           if (this.appLifecycleAdapter.getIsSignedIn()) {
             clearInterval(this.signInCheckInterval);
