@@ -87,6 +87,10 @@ android {
         }
     }
 
+    buildFeatures {
+        prefab true
+    }
+
     namespace "com.reactnativeftvatvdemoapp"
     defaultConfig {
         applicationId "com.reactnativeftvatvdemoapp"

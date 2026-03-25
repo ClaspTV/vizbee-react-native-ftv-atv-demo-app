@@ -16,7 +16,7 @@ import {
   VizbeeSenderSignInInfo,
   VizbeeSignInInfo,
 } from 'react-native-vizbee-homesso-receiver-sdk';
-import {useAppLifecycle} from '../AppLifecycleAdapter';
+import {AppLifecycleAdapter} from '../AppLifecycleAdapter';
 import {AppReadyModel} from '../AppReadyModel';
 import {SIGN_IN_TYPE, SIGN_IN_TIMEOUT_MS} from '../../constants';
 // TODO: Replace with your video events system
@@ -25,7 +25,8 @@ import VideoEvents from '../../VideoEvents';
 export const useHomeSSOAdapter = () => {
   const {initialize, sendProgress, sendSuccess, sendFailure, enableLogging} =
     useVizbeeHomeSSOReceiver();
-  const appLifecycleAdapter = useAppLifecycle();
+  const appLifecycleAdapter = AppLifecycleAdapter.getInstance();
+
   const appReadyModelRef = useRef(new AppReadyModel()).current;
 
   const authManager = useRef(new AuthManager()).current;
@@ -36,7 +37,6 @@ export const useHomeSSOAdapter = () => {
     {resolve: (value: any) => void; reject: (error: any) => void}[]
   >([]);
   const signInProgressInfo = useRef<{[key: string]: any} | null>(null);
-  const isFireTv = useRef(false); // TODO: Set this based on your platform detection
 
   useEffect(() => {
     // Set up app lifecycle listener for handling app ready/unready states
@@ -326,11 +326,14 @@ export const useHomeSSOAdapter = () => {
     return authRepository.getUserInfo();
   };
 
+  const getIsFireTv = () => {
+    return authRepository.isFireTv();
+  };
+
   return {
-    appLifecycleAdapter,
     initializeHomeSSO,
     signOut,
     getUserInfo,
-    isFireTv,
+    getIsFireTv,
   };
 };

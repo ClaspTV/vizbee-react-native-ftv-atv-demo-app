@@ -19,8 +19,16 @@ export class AppLifecycleAdapter implements VizbeeAppLifecycleAdapter {
   private _isSignedIn: boolean = false;
   private _isVideoPlaying: boolean = false;
 
-  constructor() {
-    // Initialize app lifecycle adapter
+  private static instance: AppLifecycleAdapter | null = null;
+
+  // Private constructor prevents direct instantiation
+  private constructor() {}
+
+  static getInstance(): AppLifecycleAdapter {
+    if (!AppLifecycleAdapter.instance) {
+      AppLifecycleAdapter.instance = new AppLifecycleAdapter();
+    }
+    return AppLifecycleAdapter.instance;
   }
 
   addAppLifecycleListener(listener: AppLifecycleListener): void {
@@ -146,19 +154,4 @@ export class AppLifecycleAdapter implements VizbeeAppLifecycleAdapter {
   isVideoPlaying(): boolean {
     return this._isVideoPlaying;
   }
-}
-
-/**
- * React Hook for AppLifecycleAdapter
- */
-export function useAppLifecycle() {
-  const adapter = React.useMemo(() => new AppLifecycleAdapter(), []);
-
-  React.useEffect(() => {
-    return () => {
-      adapter.clearAppReady();
-    };
-  }, [adapter]);
-
-  return adapter;
 }

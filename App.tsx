@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useCallback} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {
   NavigationContainer,
   NavigationContainerRefWithCurrent,
@@ -10,7 +10,12 @@ import {
 } from '@react-navigation/stack';
 // @ts-ignore
 import {VizbeeManager} from 'react-native-vizbee-receiver-sdk';
-import {AppDelegate, useHomeSSOAdapter, SignInScreen} from './src/homeSSO';
+import {
+  AppDelegate,
+  useHomeSSOAdapter,
+  SignInScreen,
+  AppLifecycleAdapter,
+} from './src/homeSSO';
 import VideoPlayer from './src/VideoPlayer';
 import MainScreen from './src/MainScreen';
 import {RootStackParamList} from './src/types/Types';
@@ -29,56 +34,47 @@ const App = () => {
   const appDelegateRef = useRef<AppDelegate | null>(null);
   const isInitializedRef = useRef(false);
 
-  const {
-    initializeHomeSSO,
-    signOut,
-    appLifecycleAdapter,
-    getUserInfo,
-    isFireTv,
-  } = useHomeSSOAdapter();
+  const appLifecycleAdapter = AppLifecycleAdapter.getInstance();
 
-  const handleVideoStart = useCallback(
-    (videoInfo: any) => {
-      const video = videos.find(v => v.guid === videoInfo.guid);
-      if (
-        (video?.requiresAuthentication || false) &&
-        !appLifecycleAdapter.getIsSignedIn()
-      ) {
-        NavigationManager.getInstance().navigate('SignIn', {
-          isClickNavigation: true,
-        });
-      }
-    },
-    [appLifecycleAdapter],
-  );
+  const {initializeHomeSSO, signOut, getUserInfo, isFireTv} =
+    useHomeSSOAdapter();
 
-  const handleVideoSelect = useCallback(
-    (videoInfo: any) => {
-      if (
-        videoInfo.requiresAuthentication &&
-        !appLifecycleAdapter.getIsSignedIn()
-      ) {
-        NavigationManager.getInstance().navigate('SignIn', {
-          isClickNavigation: true,
-        });
-        if (appDelegateRef.current) {
-          appDelegateRef.current.deeplinkStart(videoInfo);
-        }
-      } else {
-        appLifecycleAdapter?.setIsVideoPlaying(true);
-        NavigationManager.getInstance().navigate('VideoPlayer', {
-          guid: videoInfo.guid,
-          title: videoInfo.title,
-          isLive: videoInfo.isLive,
-          videoUrl: videoInfo.videoURL,
-          imageUrl: videoInfo.imageURL,
-          streamType: videoInfo.streamType,
-          position: 0,
-        });
+  const handleVideoStart = (videoInfo: any) => {
+    const video = videos.find(v => v.guid === videoInfo.guid);
+    if (
+      (video?.requiresAuthentication || false) &&
+      !appLifecycleAdapter.getIsSignedIn()
+    ) {
+      NavigationManager.getInstance().navigate('SignIn', {
+        isClickNavigation: true,
+      });
+    }
+  };
+
+  const handleVideoSelect = (videoInfo: any) => {
+    if (
+      videoInfo.requiresAuthentication &&
+      !appLifecycleAdapter.getIsSignedIn()
+    ) {
+      NavigationManager.getInstance().navigate('SignIn', {
+        isClickNavigation: true,
+      });
+      if (appDelegateRef.current) {
+        appDelegateRef.current.deeplinkStart(videoInfo);
       }
-    },
-    [appLifecycleAdapter],
-  );
+    } else {
+      appLifecycleAdapter?.setIsVideoPlaying(true);
+      NavigationManager.getInstance().navigate('VideoPlayer', {
+        guid: videoInfo.guid,
+        title: videoInfo.title,
+        isLive: videoInfo.isLive,
+        videoUrl: videoInfo.videoURL,
+        imageUrl: videoInfo.imageURL,
+        streamType: videoInfo.streamType,
+        position: 0,
+      });
+    }
+  };
 
   useEffect(() => {
     if (!isInitializedRef.current && appLifecycleAdapter) {
@@ -105,7 +101,7 @@ const App = () => {
         appDelegateRef.current = null;
       }
     };
-  }, [appLifecycleAdapter, initializeHomeSSO, handleVideoStart]);
+  }, [initializeHomeSSO, handleVideoStart]);
 
   const screenOptions: StackNavigationOptions = {
     headerShown: false,

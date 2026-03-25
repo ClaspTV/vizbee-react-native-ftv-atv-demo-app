@@ -9,18 +9,18 @@ import {
   VizbeeSenderSignInInfo,
   VizbeeSignInInfo,
 } from 'react-native-vizbee-homesso-receiver-sdk';
-import {useAppLifecycle} from '../core/AppLifecycleAdapter';
 // @ts-ignore
 import {VizbeeManager} from 'react-native-vizbee-receiver-sdk';
 import NavigationManager from '../../utils/NavigationManager';
 import {AppReadyModel} from '../core/AppReadyModel';
 import {MVPD_SIGN_IN_TYPE, SIGN_IN_TIMEOUT_MS} from '../constants/constants';
 import VideoEvents from '../../utils/VideoEvents';
+import {AppLifecycleAdapter} from '../core/AppLifecycleAdapter';
 
 export const useHomeSSOAdapter = () => {
   const {initialize, sendProgress, sendSuccess, sendFailure, enableLogging} =
     useVizbeeHomeSSOReceiver();
-  const appLifecycleAdapter = useAppLifecycle();
+  const appLifecycleAdapter = AppLifecycleAdapter.getInstance();
   const appReadyModelRef = useRef(new AppReadyModel()).current;
 
   const authManager = useRef(new AuthManager()).current;
@@ -34,7 +34,6 @@ export const useHomeSSOAdapter = () => {
     }[]
   >([]);
   const signInProgressInfo = useRef<{[key: string]: any} | null>(null);
-  const isFireTv = useRef(authRepository.isFireTv()).current;
 
   useEffect(() => {
     const listener: AppLifecycleListener = {
@@ -82,7 +81,7 @@ export const useHomeSSOAdapter = () => {
     });
 
     return unsubscribe;
-  }, [appLifecycleAdapter]);
+  }, []);
 
   const sendSignInInfo = async () => {
     const signedIn = await authManager.isSignedIn(MVPD_SIGN_IN_TYPE);
@@ -252,11 +251,14 @@ export const useHomeSSOAdapter = () => {
     return authRepository.getUserInfo();
   };
 
+  const getIsFireTv = () => {
+    return authRepository.isFireTv();
+  };
+
   return {
-    appLifecycleAdapter,
     initializeHomeSSO,
     signOut,
     getUserInfo,
-    isFireTv,
+    getIsFireTv,
   };
 };

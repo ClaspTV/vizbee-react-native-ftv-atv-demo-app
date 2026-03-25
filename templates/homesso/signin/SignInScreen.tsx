@@ -15,18 +15,15 @@ import {SignInViewModel} from '../Types';
 
 interface SignInScreenProps {
   signInType: string;
-  appLifecycleAdapter: AppLifecycleAdapter;
   // CLIENT TODO: Add your navigation props here
   // navigation?: YourNavigationType;
   // route?: YourRouteType;
 }
 
-export const SignInScreen: React.FC<SignInScreenProps> = ({
-  signInType,
-  appLifecycleAdapter,
-}) => {
+export const SignInScreen: React.FC<SignInScreenProps> = ({signInType}) => {
   let viewModel: SignInViewModel | null = null;
   const authRepository = new AuthRepository();
+  const appLifecycleAdapter = AppLifecycleAdapter.getInstance();
 
   // CLIENT TODO: Replace with your navigation solution
   // const navigation = useYourNavigation();

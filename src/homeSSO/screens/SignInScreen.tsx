@@ -10,23 +10,20 @@ import {useRoute, useNavigation} from '@react-navigation/native';
 import {AuthRepository} from '../auth/AuthRepository';
 import {useSignInViewModel} from './SignInViewModel';
 import {SignInCallbackHolder} from '../core/SignInCallbackHolder';
-import {AppLifecycleAdapter} from '../core/AppLifecycleAdapter';
 import {RootStackParamList} from '../../types/Types';
 import {SignInViewModel} from '../types';
+import {AppLifecycleAdapter} from '../core/AppLifecycleAdapter';
 
 interface SignInScreenProps {
   signInType: string;
-  appLifecycleAdapter: AppLifecycleAdapter;
 }
 
-export const SignInScreen: React.FC<SignInScreenProps> = ({
-  signInType,
-  appLifecycleAdapter,
-}) => {
+export const SignInScreen: React.FC<SignInScreenProps> = ({signInType}) => {
   let viewModel: SignInViewModel | null = null;
   const navigation = useNavigation();
   const authRepository = new AuthRepository();
   const route = useRoute();
+  const appLifecycleAdapter = AppLifecycleAdapter.getInstance();
 
   const isClickNavigation =
     (route.params as RootStackParamList['SignIn'])?.isClickNavigation || false;

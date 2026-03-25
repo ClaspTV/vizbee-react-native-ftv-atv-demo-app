@@ -10,14 +10,15 @@ import {
 } from 'react-native';
 import {MenuDialogProps} from './types/MenuDialog';
 import NavigationManager from './utils/NavigationManager';
+import {AppLifecycleAdapter} from './homeSSO';
 
 export const MenuDialog: React.FC<MenuDialogProps> = ({
   userEmail,
-  appLifecycleAdapter,
   onSignOut,
   visible,
   onClose,
 }) => {
+  const appLifecycleAdapter = AppLifecycleAdapter.getInstance();
   const [isSignedIn, setIsSignedIn] = useState(
     appLifecycleAdapter.getIsSignedIn(),
   );
@@ -43,7 +44,7 @@ export const MenuDialog: React.FC<MenuDialogProps> = ({
         onSignInProgressChange: handleSignInProgressChange,
       });
     };
-  }, [appLifecycleAdapter]);
+  }, []);
 
   useEffect(() => {
     if (isSignedInProgress && visible) {

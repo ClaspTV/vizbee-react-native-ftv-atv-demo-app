@@ -21,7 +21,7 @@
     "react-native-device-info": "^14.0.4",
     "react-native-gesture-handler": "2.24.0",
     "react-native-safe-area-context": "^5.6.0",
-    "react-native-screens": "^4.13.1",
+    "react-native-screens": "^3.33.0",
     "react-native-video": "^6.6.1",
     "react-native-vizbee-homesso-receiver-sdk": "file:../react-native-vizbee-homesso-receiver-sdk/react-native-vizbee-homesso-receiver-sdk-1.0.0.tgz",
     "react-native-vizbee-receiver-sdk": "file:../react-native-vizbee-receiver-sdk/react-native-vizbee-receiver-sdk-0.0.26.tgz"

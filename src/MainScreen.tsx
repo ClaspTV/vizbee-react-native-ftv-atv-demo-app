@@ -9,21 +9,19 @@ import {
   Platform,
 } from 'react-native';
 import {MenuDialog} from './MenuDialog';
-import {AppLifecycleAdapter} from './homeSSO';
 import {videos} from './data/VideoCatalog';
 import {User} from './types/Types';
+import {AppLifecycleAdapter} from './homeSSO';
 
 interface MainScreenProps {
   signedUserInfo: () => Promise<User>;
   onVideoSelect: (video: any) => void;
-  appLifecycleAdapter: AppLifecycleAdapter;
   signOut: () => Promise<Boolean>;
 }
 
 const MainScreen: React.FC<MainScreenProps> = ({
   signedUserInfo,
   onVideoSelect,
-  appLifecycleAdapter,
   signOut,
 }) => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -31,6 +29,7 @@ const MainScreen: React.FC<MainScreenProps> = ({
   const [userEmail, setUserEmail] = useState('');
   const [showMenu, setShowMenu] = useState(false);
   const [focusedItem, setFocusedItem] = useState<string | null>(null);
+  const appLifecycleAdapter = AppLifecycleAdapter.getInstance();
   const previousSignInState = useRef(appLifecycleAdapter.getIsSignedIn());
   const [isSignedIn, setIsSignedIn] = useState(
     appLifecycleAdapter.getIsSignedIn(),
@@ -50,7 +49,7 @@ const MainScreen: React.FC<MainScreenProps> = ({
         onSignedInChange: handleSignInStatusChange,
       });
     };
-  }, [appLifecycleAdapter]);
+  }, []);
 
   useEffect(() => {
     if (isSignedIn === false) {
@@ -160,7 +159,6 @@ const MainScreen: React.FC<MainScreenProps> = ({
 
       <MenuDialog
         userEmail={userEmail}
-        appLifecycleAdapter={appLifecycleAdapter}
         onSignOut={handleSignOut}
         visible={showMenu}
         onClose={() => setShowMenu(false)}
