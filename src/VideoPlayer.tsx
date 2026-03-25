@@ -37,7 +37,7 @@ const VideoPlayer = () => {
   };
 
   useEffect(() => {
-    if (videoRef.current && video) {
+    if (videoRef.current && video.guid) {
       console.log('Initializing PlayerDelegate with video:', video);
       playerDelegateRef.current = new PlayerDelegate(
         videoRef.current,
@@ -73,7 +73,8 @@ const VideoPlayer = () => {
       });
     }
     if (position > 0 && videoRef.current) {
-      videoRef.current.seek(position / 1000 - 2);
+      const seekPosition = position / 1000 - 2 > 0 ? position / 1000 - 2 : 0;
+      videoRef.current.seek(seekPosition);
       position = 0; // Reset position to avoid seeking again
     }
     VideoEvents.emitVideoStarted();

@@ -33,16 +33,13 @@ export const MenuDialog: React.FC<MenuDialogProps> = ({
     const handleSignInProgressChange = (isSignedInProgress: boolean) => {
       setIsSignedInProgress(isSignedInProgress);
     };
-    appLifecycleAdapter.addAppLifecycleListener({
+    const listener = {
       onSignedInChange: handleSignInStatusChange,
       onSignInProgressChange: handleSignInProgressChange,
-    });
-
+    };
+    appLifecycleAdapter.addAppLifecycleListener(listener);
     return () => {
-      appLifecycleAdapter.removeAppLifecycleListener({
-        onSignedInChange: handleSignInStatusChange,
-        onSignInProgressChange: handleSignInProgressChange,
-      });
+      appLifecycleAdapter.removeAppLifecycleListener(listener);
     };
   }, []);
 

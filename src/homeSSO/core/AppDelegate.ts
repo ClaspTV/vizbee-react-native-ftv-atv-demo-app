@@ -6,8 +6,8 @@ import {VideoInfo} from '../types';
 import {videos} from '../../data/VideoCatalog';
 
 interface VideoHandlerAdapterListener {
-  canUseIsFirstVideoLogic(): Boolean;
-  isFirstVideoRequest(): Boolean;
+  canUseIsFirstVideoLogic(): boolean;
+  isFirstVideoRequest(): boolean;
 }
 
 export class DeeplinkSignallingManager {
@@ -225,7 +225,7 @@ export class AppDelegate
     }
   }
 
-  canUseIsFirstVideoLogic(): Boolean {
+  canUseIsFirstVideoLogic(): boolean {
     return this.getCanUseIsFirstVideoLogic();
   }
 

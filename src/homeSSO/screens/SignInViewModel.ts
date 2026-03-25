@@ -69,20 +69,17 @@ export function useSignInViewModel(
     }
   }, [signInType]);
 
-  const startPolling = useCallback(
-    (regCode: string) => {
-      setSignInState({type: 'loading'});
+  const startPolling = (regCode: string) => {
+    setSignInState({type: 'loading'});
 
-      if (regCode) {
-        regCodePoller.current.startPoll(regCode);
-      }
-    },
-    [regCode],
-  );
+    if (regCode) {
+      regCodePoller.current.startPoll(regCode);
+    }
+  };
 
-  const stopPolling = useCallback(() => {
+  const stopPolling = () => {
     regCodePoller.current.stopPoll();
-  }, []);
+  };
 
   return {
     regCode,

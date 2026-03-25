@@ -1,11 +1,5 @@
 import React, {useEffect} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  registerCallableModule,
-} from 'react-native';
+import {View, Text, StyleSheet, ActivityIndicator} from 'react-native';
 import {useRoute, useNavigation} from '@react-navigation/native';
 import {AuthRepository} from '../auth/AuthRepository';
 import {useSignInViewModel} from './SignInViewModel';

@@ -40,14 +40,12 @@ const MainScreen: React.FC<MainScreenProps> = ({
       setIsSignedIn(isSignedIn);
     };
 
-    appLifecycleAdapter.addAppLifecycleListener({
+    const listener = {
       onSignedInChange: handleSignInStatusChange,
-    });
-
+    };
+    appLifecycleAdapter.addAppLifecycleListener(listener);
     return () => {
-      appLifecycleAdapter.removeAppLifecycleListener({
-        onSignedInChange: handleSignInStatusChange,
-      });
+      appLifecycleAdapter.removeAppLifecycleListener(listener);
     };
   }, []);
 

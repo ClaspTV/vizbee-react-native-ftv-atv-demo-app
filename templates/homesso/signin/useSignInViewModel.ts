@@ -94,17 +94,14 @@ export function useSignInViewModel(
   /**
    * Starts polling for registration code status
    */
-  const startPolling = useCallback(
-    (regCode: string) => {
-      // Start polling for registration code status
-      setSignInState({type: 'loading'});
+  const startPolling = (regCode: string) => {
+    // Start polling for registration code status
+    setSignInState({type: 'loading'});
 
-      if (regCode) {
-        regCodePoller.current.startPoll(regCode);
-      }
-    },
-    [regCode],
-  );
+    if (regCode) {
+      regCodePoller.current.startPoll(regCode);
+    }
+  };
 
   /**
    * Stops polling for registration code status
