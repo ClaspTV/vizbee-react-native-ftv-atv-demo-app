@@ -1,6 +1,5 @@
-import React from 'react';
-import {AppReadyModel} from '../core/AppReadyModel';
-import {AppLifecycleListener, VizbeeAppLifecycleAdapter} from '../types';
+import { AppReadyModel } from "../core/AppReadyModel";
+import { AppLifecycleListener, VizbeeAppLifecycleAdapter } from "../types";
 
 export class AppLifecycleAdapter implements VizbeeAppLifecycleAdapter {
   private appReadyModel: AppReadyModel | null = null;
@@ -10,7 +9,7 @@ export class AppLifecycleAdapter implements VizbeeAppLifecycleAdapter {
   // Added state properties
   private _isHomeSSOReady: boolean = false;
   private _isSignInInProgress: boolean = false;
-  private _isSignedIn: boolean = false;
+  private _isSignedIn: boolean | null = null;
   private _isVideoPlaying: boolean = false;
 
   private static instance: AppLifecycleAdapter | null = null;
@@ -41,21 +40,24 @@ export class AppLifecycleAdapter implements VizbeeAppLifecycleAdapter {
   }
 
   setAppReady(appReadyModel: AppReadyModel): void {
+    console.log("Setting app ready with model:", appReadyModel);
     const isDuplicate = this.isAppReady();
     this.appReadyModel = appReadyModel;
 
     if (!isDuplicate) {
-      this.appLifecycleListeners.forEach(listener => {
+      this.appLifecycleListeners.forEach((listener) => {
         if (listener.onAppReady) {
           listener.onAppReady(appReadyModel);
         }
       });
+    } else {
+      console.log("IGNORE_DUP_APP_READY");
     }
   }
 
   clearAppReady(): void {
     this.appReadyModel = null;
-    this.appLifecycleListeners.forEach(listener => {
+    this.appLifecycleListeners.forEach((listener) => {
       if (listener.onAppUnReady) {
         listener.onAppUnReady();
       }
@@ -73,7 +75,7 @@ export class AppLifecycleAdapter implements VizbeeAppLifecycleAdapter {
   setIsHomeSSOReady(value: boolean): void {
     if (this._isHomeSSOReady !== value) {
       this._isHomeSSOReady = value;
-      this.appLifecycleListeners.forEach(listener => {
+      this.appLifecycleListeners.forEach((listener) => {
         if (listener.onHomeSSOReadyChange) {
           listener.onHomeSSOReadyChange(value);
         }
@@ -86,9 +88,14 @@ export class AppLifecycleAdapter implements VizbeeAppLifecycleAdapter {
   }
 
   setIsSignInInProgress(value: boolean): void {
+    console.log(
+      "Setting isSignInInProgress to:",
+      value,
+      this._isSignInInProgress !== value,
+    );
     if (this._isSignInInProgress !== value) {
       this._isSignInInProgress = value;
-      this.appLifecycleListeners.forEach(listener => {
+      this.appLifecycleListeners.forEach((listener) => {
         if (listener.onSignInProgressChange) {
           listener.onSignInProgressChange(value);
         }
@@ -96,15 +103,16 @@ export class AppLifecycleAdapter implements VizbeeAppLifecycleAdapter {
     }
   }
 
-  getIsSignedIn(): boolean {
+  getIsSignedIn(): boolean | null {
     return this._isSignedIn;
   }
 
-  setIsSignedIn(value: boolean): void {
+  setIsSignedIn(value: boolean | null): void {
+    console.log("Setting isSignedIn to:", value);
     if (this._isSignedIn !== value) {
       this._isSignedIn = value;
-      this.appLifecycleListeners.forEach(listener => {
-        if (listener.onSignedInChange && value !== null) {
+      this.appLifecycleListeners.forEach((listener) => {
+        if (listener.onSignedInChange) {
           listener.onSignedInChange(value);
         }
       });
@@ -117,7 +125,7 @@ export class AppLifecycleAdapter implements VizbeeAppLifecycleAdapter {
 
   setSignInScreenExit(value: boolean): void {
     this.videoPlaying = value;
-    this.appLifecycleListeners.forEach(listener => {
+    this.appLifecycleListeners.forEach((listener) => {
       if (listener.onSignInScreenExitChange) {
         listener.onSignInScreenExitChange(value);
       }
@@ -125,6 +133,7 @@ export class AppLifecycleAdapter implements VizbeeAppLifecycleAdapter {
   }
 
   setIsVideoPlaying(videoPlaying: boolean) {
+    console.log("Setting setWasVideoPlayingOnTV to:", videoPlaying);
     // set the video playing state to false after a delay to ensure the switch case works correctly
     setTimeout(() => {
       this._isVideoPlaying = videoPlaying;

@@ -9,6 +9,7 @@ export class AuthRepository {
   private async getDeviceId(): Promise<string> {
     const deviceId = await DeviceInfo.getUniqueId();
     const prefix = (await this.isFireTv()) ? 'firetv' : 'androidtv';
+    console.log('prefix =', prefix, 'deviceId =', deviceId);
     return `${prefix}:${deviceId}`;
   }
 
@@ -25,6 +26,7 @@ export class AuthRepository {
     try {
       const deviceId = await this.getDeviceId();
       const jsonBody = JSON.stringify({deviceId});
+      console.log('fetchAccountRegCode request body:', jsonBody);
 
       const response = await fetch(`${this.apiBaseUrl}/v1/accountregcode`, {
         method: 'POST',
@@ -34,16 +36,32 @@ export class AuthRepository {
         body: jsonBody,
       });
 
+      console.log('fetchAccountRegCode response:', response);
+
       if (!response.ok) {
         throw new Error(`Failed to fetch account reg code: ${response.status}`);
       }
 
       const responseText = await response.text();
+      console.log('fetchAccountRegCode response body:', responseText);
+
       const jsonResponse = JSON.parse(responseText);
       const code = jsonResponse.code;
 
+      console.log(
+        'fetchAccountRegCode response:',
+        response,
+        'jsonResponse:',
+        jsonResponse,
+        'deviceId:',
+        deviceId,
+        'requestBody =',
+        jsonBody,
+      );
+
       return {code};
     } catch (error) {
+      console.error('Error fetching reg code:', error);
       throw error;
     }
   }
@@ -52,17 +70,27 @@ export class AuthRepository {
     regCode: string,
     callback: (result: RegCodePollResult) => boolean,
     pollingInterval: number = 2000,
-    shouldContinuePolling: () => boolean = () => true,
+    shouldContinuePolling: () => boolean = () => true, // Add this parameter
   ): Promise<void> {
+    console.log(
+      'Polling for reg code:',
+      regCode,
+      'status with interval:',
+      pollingInterval,
+    );
+
     let isDone = false;
 
     while (!isDone && shouldContinuePolling()) {
+      // Check shouldContinuePolling
       try {
         const deviceId = await this.getDeviceId();
         const jsonBody = JSON.stringify({
           deviceId,
           regCode,
         });
+
+        console.log('Poll request body:', jsonBody);
 
         const response = await fetch(
           `${this.apiBaseUrl}/v1/accountregcode/poll?seed=${
@@ -77,9 +105,13 @@ export class AuthRepository {
           },
         );
 
+        // If polling was stopped, break immediately
         if (!shouldContinuePolling()) {
+          console.log('Polling stopped, breaking loop');
           break;
         }
+
+        console.log('Poll response:', response);
 
         if (!response.ok) {
           throw new Error(`Poll request failed: ${response.status}`);
@@ -87,18 +119,22 @@ export class AuthRepository {
 
         const responseText = await response.text();
         const jsonResponse = JSON.parse(responseText);
+        const status = jsonResponse.status;
+        console.log('Poll json response:', jsonResponse);
         const result = await this.processRegCodePollResponse(jsonResponse);
+        console.log('Poll request result:', result);
 
         isDone = callback(result);
 
         if (!isDone && shouldContinuePolling()) {
           await new Promise(resolve => setTimeout(resolve, pollingInterval));
         }
-      } catch (error) {
-        const err = error instanceof Error ? error : new Error('Unknown error');
+        console.log('Polling for reg code loop: isDone =', isDone);
+      } catch (error: any) {
+        console.error('Poll request failed:', error);
         const errorResult = {
           status: RegCodePollStatus.ERROR,
-          error: err.message,
+          error: error?.message,
         };
         isDone = callback(errorResult);
       }
@@ -146,11 +182,13 @@ export class AuthRepository {
       if (response.ok) {
         const responseText = await response.text();
         const jsonResponse = JSON.parse(responseText);
+        console.log('Sign out successful, clearing AsyncStorage', jsonResponse);
         await AsyncStorage.multiRemove(['authToken', 'email']);
         return Promise.resolve(true);
       }
       return Promise.resolve(false);
     } catch (error) {
+      console.error('Sign out failed:', error);
       return Promise.resolve(false);
     }
   }

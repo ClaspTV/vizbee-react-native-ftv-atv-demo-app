@@ -1,6 +1,6 @@
 // NavigationManager.ts
-import {NavigationContainerRef} from '@react-navigation/native';
-import {RootStackParamList} from '../types/Types';
+import { NavigationContainerRef } from "@react-navigation/native";
+import { RootStackParamList } from "../types/Types";
 
 /**
  * NavigationManager handles navigation logic for the application
@@ -28,7 +28,7 @@ class NavigationManager {
    * @param navRef - The navigation container reference
    */
   public setNavigationRef(
-    navRef: NavigationContainerRef<RootStackParamList>,
+    navRef: NavigationContainerRef<RootStackParamList>
   ): void {
     this.navigationRef = navRef;
   }
@@ -53,22 +53,25 @@ class NavigationManager {
    */
   public navigate<T extends keyof RootStackParamList>(
     screenName: T,
-    params?: RootStackParamList[T],
+    params?: RootStackParamList[T]
   ): void {
     if (!this.navigationRef || !this.navigationRef.isReady()) {
-      console.warn('Navigation attempted before navigator is ready');
+      console.warn("Navigation attempted before navigator is ready");
       return;
     }
 
     const currentRoute = this.getCurrentRouteName();
-
+    console.log(
+      `Navigating to ${screenName} from ${currentRoute} with params:`,
+      params
+    );
     // Special handling for VideoPlayer
-    if (screenName === 'VideoPlayer' || screenName === 'SignIn') {
-      if (currentRoute === 'VideoPlayer' || currentRoute === 'SignIn') {
+    if (screenName === "VideoPlayer" || screenName === "SignIn") {
+      if (currentRoute === "VideoPlayer" || currentRoute === "SignIn") {
         // If already on VideoPlayer, replace instead of navigate
         this.goBack();
         this.navigationRef.dispatch({
-          type: 'NAVIGATE',
+          type: "NAVIGATE",
           payload: {
             name: screenName,
             params,
@@ -77,7 +80,7 @@ class NavigationManager {
       } else {
         // Normal navigation
         this.navigationRef.dispatch({
-          type: 'NAVIGATE',
+          type: "NAVIGATE",
           payload: {
             name: screenName,
             params,
@@ -87,7 +90,7 @@ class NavigationManager {
     } else {
       // For all other screens, use normal navigation
       this.navigationRef.dispatch({
-        type: 'NAVIGATE',
+        type: "NAVIGATE",
         payload: {
           name: screenName,
           params,
@@ -116,7 +119,7 @@ class NavigationManager {
    */
   public resetTo<T extends keyof RootStackParamList>(
     routeName: T,
-    params?: RootStackParamList[T],
+    params?: RootStackParamList[T]
   ): void {
     if (!this.navigationRef || !this.navigationRef.isReady()) {
       return;
@@ -124,7 +127,7 @@ class NavigationManager {
 
     this.navigationRef.reset({
       index: 0,
-      routes: [{name: routeName, params}],
+      routes: [{ name: routeName, params }],
     });
   }
 }

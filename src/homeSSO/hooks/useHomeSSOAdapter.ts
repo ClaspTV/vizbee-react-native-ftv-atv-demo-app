@@ -17,6 +17,8 @@ import {MVPD_SIGN_IN_TYPE, SIGN_IN_TIMEOUT_MS} from '../constants/constants';
 import VideoEvents from '../../utils/VideoEvents';
 import {AppLifecycleAdapter} from '../core/AppLifecycleAdapter';
 
+const LOG_TAG = 'useHomeSSOAdapter';
+
 export const useHomeSSOAdapter = () => {
   const {initialize, sendProgress, sendSuccess, sendFailure, enableLogging} =
     useVizbeeHomeSSOReceiver();
@@ -33,22 +35,34 @@ export const useHomeSSOAdapter = () => {
       reject: (error: any) => void;
     }[]
   >([]);
-  const signInProgressInfo = useRef<{[key: string]: any} | null>(null);
+  const signInProgressInfo = useRef<{
+    signInType: string;
+    regCode: string;
+  } | null>(null);
 
   useEffect(() => {
+    console.log(`${LOG_TAG}: Setting up app lifecycle listener`);
+
     const listener: AppLifecycleListener = {
       onAppReady: async (appReadyModel: AppReadyModel) => {
+        console.log(`${LOG_TAG}: App is ready`);
         appLifecycleAdapter.setIsHomeSSOReady(true);
         checkIsSignedIn();
 
         if (pendingCallbacksRef.current.length > 0) {
+          console.log(`${LOG_TAG}: App is ready, executing pending callbacks`);
           const callbacksToExecute = pendingCallbacksRef.current;
           try {
             const signInInfo = await sendSignInInfo();
             for (const callback of callbacksToExecute) {
+              console.log(
+                `${LOG_TAG}: Resolving callback with sign in info:`,
+                signInInfo,
+              );
               callback.resolve(signInInfo);
             }
           } catch (error) {
+            console.error(`${LOG_TAG}: Error executing callbacks:`, error);
             for (const callback of callbacksToExecute) {
               callback.reject(error);
             }
@@ -57,12 +71,15 @@ export const useHomeSSOAdapter = () => {
         }
       },
       onAppUnReady: () => {
+        console.log(`${LOG_TAG}: App is not ready`);
         appLifecycleAdapter.setIsHomeSSOReady(false);
       },
       onSignInScreenExitChange: visible => {
+        console.log(`${LOG_TAG}: SignIn Screen Exit Event received`);
         if (visible) {
           stopPollingOnBackPress();
         }
+        pendingCallbacksRef.current = [];
       },
     };
 
@@ -77,6 +94,7 @@ export const useHomeSSOAdapter = () => {
   // Subscribe to video events
   useEffect(() => {
     const unsubscribe = VideoEvents.onVideoStopped(() => {
+      console.log('Video stopped, removing player delegate');
       appLifecycleAdapter?.setIsVideoPlaying(false);
     });
 
@@ -84,6 +102,7 @@ export const useHomeSSOAdapter = () => {
   }, []);
 
   const sendSignInInfo = async () => {
+    console.log(`${LOG_TAG}: Sending sign in info`);
     const signedIn = await authManager.isSignedIn(MVPD_SIGN_IN_TYPE);
     const info = await authRepository.getUserInfo();
 
@@ -102,6 +121,7 @@ export const useHomeSSOAdapter = () => {
         customKey2: 'customValue2',
       };
     }
+    console.log(`${LOG_TAG}: Sign in info:`, mvpdSignInInfo);
     return [mvpdSignInInfo];
   };
 
@@ -114,6 +134,7 @@ export const useHomeSSOAdapter = () => {
 
       regCodePoller.setOnCheckDoneChangeListener(isDone => {
         if (isDone) {
+          console.log('Poll check done:', isDone);
           onSuccess(signInType);
         }
       });
@@ -128,13 +149,13 @@ export const useHomeSSOAdapter = () => {
           );
         }
       }, SIGN_IN_TIMEOUT_MS);
-    } catch (error) {
-      const err = error as Error;
-      onFailure(signInType, err?.message, false, err);
+    } catch (error: any) {
+      onFailure(signInType, error?.message, false, error);
     }
   };
 
   const startForegroundSignIn = () => {
+    console.log(`${LOG_TAG}: Starting foreground sign in`);
     SignInCallbackHolder.setListener({
       onProgress: (type: string, code?: string) => onProgress(type, code),
       onSuccess: (type: string) => onSuccess(type),
@@ -150,13 +171,15 @@ export const useHomeSSOAdapter = () => {
   };
 
   const onProgress = (signInType: string, regCode?: string) => {
+    console.log('Sign-in progress, regCode:', regCode);
     sendProgress(signInType, {regcode: regCode});
-    signInProgressInfo.current = {signInType, regCode};
+    signInProgressInfo.current = {signInType, regCode: regCode ?? ''};
     checkIsSignedIn();
   };
 
   const onSuccess = async (signInType: string) => {
     appLifecycleAdapter.setIsSignInInProgress(false);
+    console.log('Sign-in successful');
     const info = await authRepository.getUserInfo();
     checkIsSignedIn();
     if (timeoutRef.current) {
@@ -171,6 +194,7 @@ export const useHomeSSOAdapter = () => {
     isCancelled: boolean,
     error: Error | null,
   ) => {
+    console.log('Sign-in Failed');
     appLifecycleAdapter.setIsSignInInProgress(false);
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -179,38 +203,57 @@ export const useHomeSSOAdapter = () => {
   };
 
   const initializeHomeSSO = () => {
+    console.log(`${LOG_TAG}: Initializing HomeSSO`);
     enableLogging(true);
+    console.log(`${LOG_TAG}: Logging enabled`);
     initialize({
       onGetSignInInfo: async () => {
         if (!appLifecycleAdapter.isAppReady()) {
+          console.log(`${LOG_TAG}: App not ready, adding to pending callbacks`);
           return new Promise((resolve, reject) => {
             pendingCallbacksRef.current.push({
               resolve,
               reject,
             });
+            console.log(
+              `${LOG_TAG}: Total pending callbacks: ${pendingCallbacksRef.current.length}`,
+            );
           });
         }
+        console.log(`${LOG_TAG}: App is ready, sending sign in info`);
         const signInInfo = await sendSignInInfo();
         return signInInfo;
       },
       onStartSignIn: async (senderInfo: VizbeeSenderSignInInfo) => {
+        console.log(
+          `${LOG_TAG}: Received start sign in request:`,
+          senderInfo,
+          appLifecycleAdapter.isVideoPlaying(),
+        );
         if (appLifecycleAdapter.isVideoPlaying()) {
+          console.log(`${LOG_TAG}: Skipping sign in due to video playback`);
           return;
         }
 
         if (!appLifecycleAdapter.getIsSignInInProgress()) {
           appLifecycleAdapter.setIsSignInInProgress(true);
           signInProgressInfo.current = null;
+          console.log(`${LOG_TAG}: Starting sign in process`);
           if (senderInfo.isSignedIn) {
             await startBackgroundSignIn(MVPD_SIGN_IN_TYPE);
           } else {
             startForegroundSignIn();
           }
         } else {
-          onProgress(
-            signInProgressInfo.current?.signInType,
-            signInProgressInfo.current?.regCode,
+          console.log(
+            `${LOG_TAG}: Sign in screen already open, not starting sign in process ${signInProgressInfo.current}`,
           );
+          if (signInProgressInfo.current) {
+            onProgress(
+              signInProgressInfo.current?.signInType,
+              signInProgressInfo.current?.regCode,
+            );
+          }
         }
       },
     });
@@ -224,6 +267,7 @@ export const useHomeSSOAdapter = () => {
   const stopPollingOnBackPress = () => {
     checkIsSignedIn();
     if (appLifecycleAdapter.getIsSignInInProgress()) {
+      console.log('Stopping polling on back press');
       regCodePoller.stopPoll();
       appLifecycleAdapter.setIsSignInInProgress(false);
       VizbeeManager.getAppDelegate()?.deeplinkStop();
@@ -232,6 +276,8 @@ export const useHomeSSOAdapter = () => {
   };
 
   const signOut = async () => {
+    console.log(`${LOG_TAG}: Signing out`);
+
     return await authRepository
       .signOut()
       .then(signOut => {
@@ -243,6 +289,7 @@ export const useHomeSSOAdapter = () => {
         }
       })
       .catch(error => {
+        console.log(`${LOG_TAG}: Sign out failed`, error);
         return Promise.reject(false);
       });
   };
@@ -254,6 +301,8 @@ export const useHomeSSOAdapter = () => {
   const getIsFireTv = () => {
     return authRepository.isFireTv();
   };
+
+  console.log(`${LOG_TAG}: Home SSO adapter initialized`);
 
   return {
     initializeHomeSSO,

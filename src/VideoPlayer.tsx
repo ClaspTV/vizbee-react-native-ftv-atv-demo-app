@@ -13,6 +13,7 @@ interface VideoInfo {
   title?: string;
   imageURL?: string;
   guid?: string;
+  live?: boolean;
 }
 
 const VideoPlayer = () => {
@@ -27,6 +28,7 @@ const VideoPlayer = () => {
     title: route.params?.title,
     imageURL: route.params?.imageUrl,
     guid: route.params?.guid,
+    live: route.params?.isLive ?? false,
   };
 
   let position = route.params?.position || 0;
@@ -37,7 +39,7 @@ const VideoPlayer = () => {
   };
 
   useEffect(() => {
-    if (videoRef.current && video.guid) {
+    if (videoRef.current && video) {
       console.log('Initializing PlayerDelegate with video:', video);
       playerDelegateRef.current = new PlayerDelegate(
         videoRef.current,
@@ -48,6 +50,7 @@ const VideoPlayer = () => {
     }
 
     return () => {
+      console.log('Cleaning up PlayerDelegate');
       if (playerDelegateRef.current) {
         VizbeeManager.removePlayerDelegate();
         playerDelegateRef.current = null;
@@ -73,8 +76,7 @@ const VideoPlayer = () => {
       });
     }
     if (position > 0 && videoRef.current) {
-      const seekPosition = position / 1000 - 2 > 0 ? position / 1000 - 2 : 0;
-      videoRef.current.seek(seekPosition);
+      videoRef.current.seek(position / 1000 - 2);
       position = 0; // Reset position to avoid seeking again
     }
     VideoEvents.emitVideoStarted();
@@ -116,7 +118,7 @@ const VideoPlayer = () => {
     // Handle error appropriately
   };
 
-  if (!video) {
+  if (!video.guid) {
     console.log('No video data available');
     handleClose();
     return null;

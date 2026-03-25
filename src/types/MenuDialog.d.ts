@@ -1,4 +1,4 @@
-import {AppLifecycleAdapter} from '../homeSSO';
+import { AppLifecycleAdapter } from "../homeSSO";
 export interface MenuDialogProps {
   userEmail: string;
   onSignOut: () => void;

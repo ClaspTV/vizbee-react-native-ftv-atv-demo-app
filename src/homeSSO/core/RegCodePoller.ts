@@ -1,9 +1,9 @@
-import {AuthRepository} from '../auth/AuthRepository';
-import {RegCode, RegCodePollResult, RegCodePollStatus} from '../types';
+import { AuthRepository } from "../auth/AuthRepository";
+import { RegCode, RegCodePollResult, RegCodePollStatus } from "../types";
 
 export abstract class RegCodePoller {
   private pollTimer?: NodeJS.Timeout;
-  private _regCode: string = '';
+  private _regCode: string = "";
   private _isCheckDone: boolean = false;
   protected _isPolling: boolean = false;
   private listeners: {
@@ -13,7 +13,7 @@ export abstract class RegCodePoller {
 
   constructor(
     protected readonly authRepository: AuthRepository,
-    protected readonly pollingInterval: number = 2000,
+    protected readonly pollingInterval: number = 2000
   ) {}
 
   async requestCode(): Promise<string> {
@@ -23,6 +23,7 @@ export abstract class RegCodePoller {
       this.setRegCode(result.code);
       return result.code;
     } catch (error) {
+      console.error("Error requesting code:", error);
       throw error;
     }
   }
@@ -40,12 +41,14 @@ export abstract class RegCodePoller {
           this.setIsCheckDone(true);
         }
       })
-      .catch(error => {
+      .catch((error) => {
+        console.error("Error in poll process:", error);
         this.stopPoll();
       });
   }
 
   stopPoll() {
+    console.log("Stopping poll");
     this._isPolling = false;
     if (this.pollTimer) {
       clearTimeout(this.pollTimer);

@@ -13,11 +13,11 @@ interface SignInScreenProps {
 }
 
 export const SignInScreen: React.FC<SignInScreenProps> = ({signInType}) => {
+  const appLifecycleAdapter = AppLifecycleAdapter.getInstance();
   let viewModel: SignInViewModel | null = null;
   const navigation = useNavigation();
   const authRepository = new AuthRepository();
   const route = useRoute();
-  const appLifecycleAdapter = AppLifecycleAdapter.getInstance();
 
   const isClickNavigation =
     (route.params as RootStackParamList['SignIn'])?.isClickNavigation || false;
@@ -26,22 +26,24 @@ export const SignInScreen: React.FC<SignInScreenProps> = ({signInType}) => {
     viewModel = useSignInViewModel(authRepository, signInType);
 
     useEffect(() => {
-      if (!viewModel) return;
-      viewModel.requestCode();
+      viewModel?.requestCode();
       appLifecycleAdapter?.setSignInScreenExit(false);
 
       return () => {
-        if (!viewModel) return;
-        viewModel.stopPolling();
+        viewModel?.stopPolling();
         SignInCallbackHolder.clearListener();
         appLifecycleAdapter?.setSignInScreenExit(true);
       };
     }, []);
 
     useEffect(() => {
-      if (!viewModel) return;
-      const routeCount = navigation.getState()?.routes?.length || 0;
-      if (viewModel.signInState.type === 'success' && routeCount > 1) {
+      const navigationState = navigation.getState();
+      if (
+        viewModel?.signInState.type === 'success' &&
+        navigationState &&
+        navigationState?.routes?.length > 1
+      ) {
+        console.log('Sign-in successful, navigating back');
         navigation.goBack();
       }
     }, [viewModel.signInState, navigation]);
@@ -52,6 +54,8 @@ export const SignInScreen: React.FC<SignInScreenProps> = ({signInType}) => {
         if (isSignedIn) {
           navigation.goBack();
           clearInterval(interval);
+        } else {
+          console.log('Still waiting for sign-in via click navigation');
         }
       }, 1000);
       return () => clearInterval(interval);
@@ -66,7 +70,7 @@ export const SignInScreen: React.FC<SignInScreenProps> = ({signInType}) => {
 
       {(viewModel?.regCode || isClickNavigation) && (
         <Text style={styles.regCodeText}>
-          Registration Code: {isClickNavigation ? 'XCVF' : viewModel!.regCode}
+          Registration Code: {isClickNavigation ? 'XCVF' : viewModel?.regCode}
         </Text>
       )}
 

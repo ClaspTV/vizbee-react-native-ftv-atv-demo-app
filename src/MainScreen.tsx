@@ -5,8 +5,8 @@ import {
   Text,
   Image,
   TouchableOpacity,
-  Modal,
   Platform,
+  BackHandler,
 } from 'react-native';
 import {MenuDialog} from './MenuDialog';
 import {videos} from './data/VideoCatalog';
@@ -24,20 +24,22 @@ const MainScreen: React.FC<MainScreenProps> = ({
   onVideoSelect,
   signOut,
 }) => {
+  const appLifecycleAdapter = AppLifecycleAdapter.getInstance();
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [showMenu, setShowMenu] = useState(false);
   const [focusedItem, setFocusedItem] = useState<string | null>(null);
-  const appLifecycleAdapter = AppLifecycleAdapter.getInstance();
   const previousSignInState = useRef(appLifecycleAdapter.getIsSignedIn());
   const [isSignedIn, setIsSignedIn] = useState(
     appLifecycleAdapter.getIsSignedIn(),
   );
 
   useEffect(() => {
-    const handleSignInStatusChange = (isSignedIn: boolean) => {
-      setIsSignedIn(isSignedIn);
+    const handleSignInStatusChange = (isSignedIn: boolean | null) => {
+      if (isSignedIn !== null) {
+        setIsSignedIn(isSignedIn);
+      }
     };
 
     const listener = {
@@ -67,6 +69,21 @@ const MainScreen: React.FC<MainScreenProps> = ({
     }
     getUserInfo();
   }, [isSignedIn]);
+
+  useEffect(() => {
+    const handleBackPress = () => {
+      if (showMenu) {
+        setShowMenu(false);
+        return true; // Prevent default behavior (exit app)
+      }
+      return false; // Allow default behavior
+    };
+    BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
+    };
+  }, [showMenu]);
 
   const getUserInfo = async () => {
     const info = await signedUserInfo();
@@ -102,6 +119,7 @@ const MainScreen: React.FC<MainScreenProps> = ({
   };
 
   const handleFocus = (itemId: string) => {
+    console.log('Focus on item:', itemId);
     setFocusedItem(itemId);
   };
 
@@ -140,7 +158,6 @@ const MainScreen: React.FC<MainScreenProps> = ({
           <Text style={styles.settingsButtonText}>⚙️ Settings</Text>
         </TouchableOpacity>
       </View>
-
       <View style={styles.videoGrid}>
         {videos.map(video => (
           <TouchableOpacity
@@ -154,31 +171,32 @@ const MainScreen: React.FC<MainScreenProps> = ({
           </TouchableOpacity>
         ))}
       </View>
-
-      <MenuDialog
-        userEmail={userEmail}
-        onSignOut={handleSignOut}
-        visible={showMenu}
-        onClose={() => setShowMenu(false)}
-      />
-
+      {showMenu && (
+        <View style={styles.menuOverlay}>
+          <MenuDialog
+            userEmail={userEmail}
+            onSignOut={handleSignOut}
+            visible={true}
+            onClose={() => setShowMenu(false)}
+          />
+        </View>
+      )}
       {/* Success Message Modal */}
-      <Modal visible={showSuccessMessage} transparent animationType="fade">
-        <View style={styles.messageOverlay}>
+      {showSuccessMessage && (
+        <View style={styles.menuOverlay}>
           <View style={styles.messageContainer}>
             <Text style={styles.messageText}>Sign out successful</Text>
           </View>
         </View>
-      </Modal>
-
+      )}
       {/* Welcome Message Modal */}
-      <Modal visible={showWelcomeMessage} transparent animationType="fade">
-        <View style={styles.messageOverlay}>
+      {showWelcomeMessage && (
+        <View style={styles.menuOverlay}>
           <View style={styles.messageContainer}>
             <Text style={styles.messageText}>Welcome, {userEmail}</Text>
           </View>
         </View>
-      </Modal>
+      )}
     </View>
   );
 };
@@ -271,5 +289,15 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     textAlign: 'center',
+  },
+  menuOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

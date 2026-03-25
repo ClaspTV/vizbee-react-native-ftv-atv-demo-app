@@ -36,7 +36,7 @@ const App = () => {
 
   const appLifecycleAdapter = AppLifecycleAdapter.getInstance();
 
-  const {initializeHomeSSO, signOut, getUserInfo, isFireTv} =
+  const {initializeHomeSSO, signOut, getUserInfo, getIsFireTv} =
     useHomeSSOAdapter();
 
   const handleVideoStart = (videoInfo: any) => {
@@ -85,7 +85,7 @@ const App = () => {
       VizbeeManager.enableVerboseLogging();
       appDelegateRef.current.setOnVideoStartCallback(handleVideoStart);
       appDelegateRef.current.setIsAppReady(true);
-      appDelegateRef.current.setCanUseIsFirstVideoLogic(!isFireTv);
+      appDelegateRef.current.setCanUseIsFirstVideoLogic(!getIsFireTv());
 
       console.log('Initializing HomeSSO');
 
@@ -129,20 +129,13 @@ const App = () => {
             <MainScreen
               {...props}
               signOut={signOut}
-              appLifecycleAdapter={appLifecycleAdapter}
               signedUserInfo={getUserInfo}
               onVideoSelect={handleVideoSelect}
             />
           )}
         </Stack.Screen>
         <Stack.Screen name="SignIn" options={signInScreenOptions}>
-          {props => (
-            <SignInScreen
-              {...props}
-              appLifecycleAdapter={appLifecycleAdapter}
-              signInType={MVPD_SIGN_IN_TYPE}
-            />
-          )}
+          {props => <SignInScreen {...props} signInType={MVPD_SIGN_IN_TYPE} />}
         </Stack.Screen>
         <Stack.Screen
           name="VideoPlayer"

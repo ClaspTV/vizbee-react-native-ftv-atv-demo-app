@@ -1,4 +1,4 @@
-import {AppReadyModel} from './core/AppReadyModel';
+import { AppReadyModel } from "./core/AppReadyModel";
 
 export interface VideoInfo {
   guid: string;
@@ -19,7 +19,7 @@ export interface AppLifecycleListener {
   onAppUnReady?: () => void;
   onHomeSSOReadyChange?: (isReady: boolean) => void;
   onSignInProgressChange?: (inProgress: boolean) => void;
-  onSignedInChange?: (isSignedIn: boolean) => void;
+  onSignedInChange?: (isSignedIn: boolean | null) => void;
   onSignInScreenExitChange?: (visible: boolean) => void;
 }
 
@@ -34,8 +34,8 @@ export interface VizbeeAppLifecycleAdapter {
   setIsHomeSSOReady: (value: boolean) => void;
   getIsSignInInProgress: () => boolean;
   setIsSignInInProgress: (value: boolean) => void;
-  getIsSignedIn: () => boolean;
-  setIsSignedIn: (value: boolean) => void;
+  getIsSignedIn: () => boolean | null;
+  setIsSignedIn: (value: boolean | null) => void;
   getSignInScreenExit: () => boolean;
   setSignInScreenExit: (value: boolean) => void;
 }
@@ -45,10 +45,10 @@ export interface RegCode {
 }
 
 export enum RegCodePollStatus {
-  NOT_FOUND = 'NOT_FOUND',
-  IN_PROGRESS = 'IN_PROGRESS',
-  DONE = 'DONE',
-  ERROR = 'ERROR',
+  NOT_FOUND = "NOT_FOUND",
+  IN_PROGRESS = "IN_PROGRESS",
+  DONE = "DONE",
+  ERROR = "ERROR",
 }
 
 export interface RegCodePollResult {
@@ -69,15 +69,15 @@ export interface VizbeeSignInInfo {
 }
 
 export type SignInState =
-  | {type: 'loading'}
-  | {type: 'success'}
-  | {type: 'error'; message: string};
+  | { type: "loading" }
+  | { type: "success" }
+  | { type: "error"; message: string };
 
 export interface SignInViewModel {
   regCode: string | null;
   signInState: SignInState;
-  requestCode: () => Promise<string | undefined>;
-  startPolling: (regCode: string) => void;
+  requestCode: () => Promise<string>;
+  startPolling: (regCode: string | null) => void;
   stopPolling: () => void;
 }
 
@@ -88,6 +88,6 @@ export interface VizbeeSignInStatusListener {
     signInType: string,
     reason: string,
     isCancelled: boolean,
-    error: Error | null,
+    error: Error | null
   ) => void;
 }

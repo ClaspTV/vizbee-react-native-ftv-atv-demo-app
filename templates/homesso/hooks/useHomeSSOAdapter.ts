@@ -8,19 +8,19 @@
 import {useEffect, useRef} from 'react';
 import {useVizbeeHomeSSOReceiver} from 'react-native-vizbee-homesso-receiver-sdk';
 import {MvpdRegCodePoller} from '../poller/implementation/MvpdRegCodePoller';
-import {AuthRepository} from '../../auth/AuthRepository';
-import {AuthManager} from '../../auth/AuthManager';
-import {SignInCallbackHolder} from '../../signin/SignInCallbackHolder';
-import {AppLifecycleListener} from '../../Types';
+import {AuthRepository} from '../auth/AuthRepository';
+import {AuthManager} from '../auth/AuthManager';
+import {SignInCallbackHolder} from '../signin/SignInCallbackHolder';
+import {AppLifecycleListener} from '../Types';
 import {
   VizbeeSenderSignInInfo,
   VizbeeSignInInfo,
 } from 'react-native-vizbee-homesso-receiver-sdk';
 import {AppLifecycleAdapter} from '../AppLifecycleAdapter';
 import {AppReadyModel} from '../AppReadyModel';
-import {SIGN_IN_TYPE, SIGN_IN_TIMEOUT_MS} from '../../constants';
+import {SIGN_IN_TYPE, SIGN_IN_TIMEOUT_MS} from '../constants';
 // TODO: Replace with your video events system
-import VideoEvents from '../../VideoEvents';
+import VideoEvents from '../VideoEvents';
 
 export const useHomeSSOAdapter = () => {
   const {initialize, sendProgress, sendSuccess, sendFailure, enableLogging} =

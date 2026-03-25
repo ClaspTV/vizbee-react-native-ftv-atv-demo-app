@@ -4,7 +4,7 @@
  * Manages sign-in callback listeners for communication between components
  */
 
-import {VizbeeSignInStatusListener} from '../../Types';
+import {VizbeeSignInStatusListener} from '../Types';
 
 class SignInCallbackHolder {
   private static listener: VizbeeSignInStatusListener | null = null;

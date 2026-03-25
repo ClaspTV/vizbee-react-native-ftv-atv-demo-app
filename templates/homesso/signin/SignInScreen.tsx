@@ -10,7 +10,7 @@ import {View, Text, StyleSheet, ActivityIndicator} from 'react-native';
 import {AuthRepository} from '../auth/AuthRepository';
 import {useSignInViewModel} from './useSignInViewModel';
 import {SignInCallbackHolder} from './SignInCallbackHolder';
-import {AppLifecycleAdapter} from '../homesso/AppLifecycleAdapter';
+import {AppLifecycleAdapter} from '../AppLifecycleAdapter';
 import {SignInViewModel} from '../Types';
 
 interface SignInScreenProps {
@@ -59,7 +59,7 @@ export const SignInScreen: React.FC<SignInScreenProps> = ({signInType}) => {
         // CLIENT TODO: Replace with your navigation solution
         // navigation.goBack();
       }
-    }, [viewModel.signInState]);
+    }, [viewModel?.signInState]);
   } else {
     // Handle click navigation (user will sign in via web/mobile)
     useEffect(() => {

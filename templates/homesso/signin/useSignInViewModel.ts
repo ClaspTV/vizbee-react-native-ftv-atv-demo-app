@@ -7,7 +7,7 @@
 import {useState, useEffect, useCallback, useRef} from 'react';
 import {AuthRepository} from '../auth/AuthRepository';
 import {MvpdRegCodePoller} from '../poller/implementation/MvpdRegCodePoller';
-import {SignInState, SignInViewModel} from '../../Types';
+import {SignInState, SignInViewModel} from '../Types';
 import {SignInCallbackHolder} from './SignInCallbackHolder';
 
 export function useSignInViewModel(

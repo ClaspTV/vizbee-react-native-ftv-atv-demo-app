@@ -17,7 +17,13 @@ export class DeeplinkManager {
     const streamType = customMetadata.streamType || 'vod';
 
     try {
+      console.log(
+        'Deeplink invoked:',
+        JSON.stringify({videoInfo, positionMs}, null, 2),
+      );
+
       // Navigate to the VideoPlayer screen with the provided video info has to be done by client
+
       NavigationManager.getInstance().navigate('VideoPlayer', {
         guid: videoInfo.guid,
         title: videoInfo.title,
@@ -28,19 +34,24 @@ export class DeeplinkManager {
         position: positionMs,
       });
     } catch (error) {
+      console.error('Deeplink failed:', error);
       this.handleDeeplinkFailure();
     }
   }
 
   handleDeeplinkFailure() {
+    console.log('Handling deeplink failure');
     if (!this.videoInfo) return;
+    console.log('Sending fake deeplink failure status');
     const videoInfo = this.videoInfo;
-    const playerDelegate = new PlayerDelegate(null, videoInfo, () => {});
+    const playerDelegate = new PlayerDelegate(null, videoInfo, null);
     VizbeeManager.setPlayerDelegate(playerDelegate);
     playerDelegate.updatePlaybackState({interrupted: true});
     this.unsubscribe = VideoEvents.onInterruptedStatusSent(() => {
+      console.log('Fake deeplink failure status received');
       this.unsubscribe();
       setTimeout(() => {
+        console.log('Removing player delegate after fake failure');
         VizbeeManager.removePlayerDelegate();
       }, 500);
       this.videoInfo = null;

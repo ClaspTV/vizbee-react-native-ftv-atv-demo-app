@@ -5,7 +5,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Modal,
   Pressable,
 } from 'react-native';
 import {MenuDialogProps} from './types/MenuDialog';
@@ -27,17 +26,21 @@ export const MenuDialog: React.FC<MenuDialogProps> = ({
   );
 
   useEffect(() => {
-    const handleSignInStatusChange = (isSignedIn: boolean) => {
-      setIsSignedIn(isSignedIn);
+    const handleSignInStatusChange = (isSignedIn: boolean | null) => {
+      if (isSignedIn !== null) {
+        setIsSignedIn(isSignedIn);
+      }
     };
     const handleSignInProgressChange = (isSignedInProgress: boolean) => {
       setIsSignedInProgress(isSignedInProgress);
     };
+
     const listener = {
       onSignedInChange: handleSignInStatusChange,
       onSignInProgressChange: handleSignInProgressChange,
     };
     appLifecycleAdapter.addAppLifecycleListener(listener);
+
     return () => {
       appLifecycleAdapter.removeAppLifecycleListener(listener);
     };
@@ -53,56 +56,53 @@ export const MenuDialog: React.FC<MenuDialogProps> = ({
   }, [isSignedInProgress, visible, onClose]);
 
   const handleSignInPress = () => {
+    console.log('MenuDialog handleSignInPress');
     onClose();
     onSignIn();
   };
 
   const onSignIn = () => {
+    console.log('MenuDialog onSignIn called');
     NavigationManager.getInstance().navigate('SignIn', {
       isClickNavigation: true,
     });
   };
 
   const handleSignOutPress = async () => {
+    console.log('MenuDialog handleSignOutPress');
     onClose();
     onSignOut();
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}>
-      <Pressable style={styles.modalOverlay} onPress={onClose}>
-        <View style={styles.dialogContainer}>
-          <View style={styles.dialog}>
-            {isSignedInProgress ? (
-              <Text style={styles.statusText}>Signing in, please wait...</Text>
-            ) : isSignedIn || userEmail ? (
-              <>
-                <Text style={styles.profileText}>
-                  {userEmail || 'Signed In User'}
-                </Text>
-                <TouchableOpacity
-                  style={styles.button}
-                  onPress={handleSignOutPress}
-                  hasTVPreferredFocus>
-                  <Text style={styles.buttonText}>Sign Out</Text>
-                </TouchableOpacity>
-              </>
-            ) : (
+    <Pressable onPress={onClose}>
+      <View style={styles.dialogContainer}>
+        <View style={styles.dialog}>
+          {isSignedInProgress ? (
+            <Text style={styles.statusText}>Signing in, please wait...</Text>
+          ) : isSignedIn || userEmail ? (
+            <>
+              <Text style={styles.profileText}>
+                {userEmail || 'Signed In User'}
+              </Text>
               <TouchableOpacity
                 style={styles.button}
-                onPress={handleSignInPress}
+                onPress={handleSignOutPress}
                 hasTVPreferredFocus>
-                <Text style={styles.buttonText}>Sign In</Text>
+                <Text style={styles.buttonText}>Sign Out</Text>
               </TouchableOpacity>
-            )}
-          </View>
+            </>
+          ) : (
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleSignInPress}
+              hasTVPreferredFocus>
+              <Text style={styles.buttonText}>Sign In</Text>
+            </TouchableOpacity>
+          )}
         </View>
-      </Pressable>
-    </Modal>
+      </View>
+    </Pressable>
   );
 };
 
