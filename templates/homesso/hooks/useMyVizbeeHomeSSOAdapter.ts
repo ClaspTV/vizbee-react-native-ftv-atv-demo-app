@@ -29,7 +29,6 @@ export const useMyVizbeeHomeSSOAdapter = () => {
   const appReadyModelRef = useRef(new AppReadyModel()).current;
 
   const authManager = useRef(new AuthManager()).current;
-  const timeoutRef = useRef<NodeJS.Timeout>();
   const pendingCallbacksRef = useRef<
     {resolve: (value: any) => void; reject: (error: any) => void}[]
   >([]);
@@ -163,11 +162,6 @@ export const useMyVizbeeHomeSSOAdapter = () => {
     // Clean up sign-in state and send failure notification
     appLifecycleAdapter.setIsSignInInProgress(false);
 
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = undefined;
-    }
-
     sendFailure(signInType, reason, isCancelled, error);
   };
 
@@ -210,8 +204,8 @@ export const useMyVizbeeHomeSSOAdapter = () => {
           }
         } else {
           // Sign-in already in progress, send current progress
-          // CLIENT TODO: send sign-type and regcode
-          onProgress('<signInType>', '<regCode>');
+          // CLIENT TODO: send sign-type and regcode with onProgress callback
+          // onProgress('<signInType>', '<regCode>');
         }
       },
     });
