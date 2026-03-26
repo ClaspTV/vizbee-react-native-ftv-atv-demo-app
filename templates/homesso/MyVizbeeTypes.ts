@@ -12,17 +12,6 @@ export interface VideoInfo {
   customMetadata?: {[key: string]: any};
 }
 
-export interface VizbeeSignInStatusListener {
-  onProgress: (type: string, code?: string) => void;
-  onSuccess: (type: string) => void;
-  onFailure: (
-    type: string,
-    reason: string,
-    isCancelled: boolean,
-    error: Error | null,
-  ) => void;
-}
-
 export interface AppLifecycleListener {
   onAppReady?: (appReadyModel: AppReadyModel) => void;
   onAppUnReady?: () => void;
