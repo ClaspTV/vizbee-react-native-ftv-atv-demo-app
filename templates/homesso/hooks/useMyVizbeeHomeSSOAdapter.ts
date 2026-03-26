@@ -227,11 +227,7 @@ export const useMyVizbeeHomeSSOAdapter = () => {
     checkIsSignedIn();
     if (appLifecycleAdapter.getIsSignInInProgress()) {
       appLifecycleAdapter.setIsSignInInProgress(false);
-      // CLIENT TODO: Import VizbeeManager and uncomment when needed
-      // Stop polling and clean up sign-in state
-
-      // import { VizbeeManager } from 'react-native-vizbee-receiver-sdk';
-      // VizbeeManager.getAppDelegate()?.deeplinkStop();
+      // CLIENT TODO: On Stop if deeplinking play the last video object
       sendFailure(SIGN_IN_TYPE, 'User pressed back button', true, null);
     }
   };

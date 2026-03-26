@@ -30,7 +30,6 @@ export class MyVizbeeAppDelegate
   // ── Instance State ──────────────────────────────────────────────────────────
 
   isAppReady: boolean;
-  onVideoStartCallback: ((videoInfo: any) => void) | null;
   private appLifecycleAdapter: AppLifecycleAdapter;
   private signInCheckInterval?: NodeJS.Timeout;
   private _isFirstVideoRequest: boolean = true;
@@ -42,7 +41,6 @@ export class MyVizbeeAppDelegate
   constructor(appLifecycleAdapter: AppLifecycleAdapter) {
     super();
     this.isAppReady = false;
-    this.onVideoStartCallback = null;
     this.appLifecycleAdapter = appLifecycleAdapter;
   }
 
@@ -65,7 +63,6 @@ export class MyVizbeeAppDelegate
     super.onSendersInactive();
     this._isFirstVideoRequest = false;
     this.setVideoInfo(null);
-    this.deeplinkStop();
   }
 
   /**
@@ -74,13 +71,9 @@ export class MyVizbeeAppDelegate
    */
   onStartVideo(videoInfo: VideoInfo) {
     super.onStartVideo(videoInfo);
-    setTimeout(() => {
-      if (this.isAppReady && this.onVideoStartCallback) {
-        this.onVideoStartCallback(videoInfo);
-      }
-      this.deeplinkStart(videoInfo);
-      this.setVideoInfo(videoInfo);
-    }, 1000);
+
+    this.deeplinkStart(videoInfo);
+    this.setVideoInfo(videoInfo);
   }
 
   // ── Deeplink ────────────────────────────────────────────────────────────────
@@ -111,73 +104,11 @@ export class MyVizbeeAppDelegate
         // Awaiting sign-in — send a fake failure and poll until signed in
         appReadyModel.deeplinkManager.sendFakeDeeplinkFailure(videoInfo);
 
-        let elapsedTime = 0;
-
-        if (this.signInCheckInterval) {
-          clearInterval(this.signInCheckInterval);
-        }
-
-        this.signInCheckInterval = setInterval(() => {
-          elapsedTime += 1000;
-
-          if (this.appLifecycleAdapter.getIsSignedIn()) {
-            clearInterval(this.signInCheckInterval);
-            appReadyModel.deeplinkManager.deeplinkVideo(
-              videoInfo,
-              videoInfo.startPosition ?? 0,
-            );
-            this.appLifecycleAdapter.setIsVideoPlaying(true);
-            return;
-          }
-
-          if (elapsedTime > 60000) {
-            clearInterval(this.signInCheckInterval);
-            this.signInCheckInterval = undefined;
-          }
-        }, 1000);
+        // CLIENT TODO: Poll getIsSignedIn() from your authentication system here and deeplink after successful sign-in, or timeout after a reasonable period (e.g. 60s)
       },
       videoInfo,
-      0,
+      videoInfo.startPosition ?? 0,
     );
-  }
-
-  /**
-   * Stops any active deeplink flow and clears the sign-in polling interval.
-   * Re-attempts deeplink if the video does not require authentication.
-   */
-  deeplinkStop() {
-    if (this.signInCheckInterval) {
-      clearInterval(this.signInCheckInterval);
-      this.signInCheckInterval = undefined;
-      this.checkIfNeedToDeeplink();
-      this.setVideoInfo(null);
-    }
-  }
-
-  /**
-   * Re-starts deeplink if the stored video does not require authentication
-   * and no video is currently playing.
-   *
-   * CLIENT TODO: Resolve `videoRequiresAuthentication` from one of:
-   *   1. videoInfo.requiresAuthentication (if present in video metadata)
-   *   2. Your video catalog / CMS system
-   *   3. Your content management configuration
-   *   4. Video content type or genre rules
-   */
-  private checkIfNeedToDeeplink() {
-    if (!this._isVideoInfo) {
-      return;
-    }
-
-    const videoRequiresAuthentication =
-      this._isVideoInfo.requiresAuthentication ?? false;
-
-    if (
-      !videoRequiresAuthentication &&
-      !this.appLifecycleAdapter.isVideoPlaying()
-    ) {
-      this.deeplinkStart(this._isVideoInfo);
-    }
   }
 
   // ── State Accessors ─────────────────────────────────────────────────────────
@@ -198,13 +129,6 @@ export class MyVizbeeAppDelegate
       clearInterval(this.signInCheckInterval);
       this.signInCheckInterval = undefined;
     }
-  }
-
-  /**
-   * Registers a callback to be invoked on each video start event.
-   */
-  setOnVideoStartCallback(callback: ((videoInfo: any) => void) | null) {
-    this.onVideoStartCallback = callback;
   }
 
   // ── VideoHandlerAdapterListener Implementation ──────────────────────────────
