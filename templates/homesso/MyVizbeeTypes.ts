@@ -12,24 +12,6 @@ export interface VideoInfo {
   customMetadata?: {[key: string]: any};
 }
 
-export interface RegCode {
-  code: string;
-}
-
-export enum RegCodePollStatus {
-  NOT_FOUND = 'notFound',
-  IN_PROGRESS = 'inProgress',
-  DONE = 'done',
-  ERROR = 'error',
-}
-
-export interface RegCodePollResult {
-  status: RegCodePollStatus;
-  authToken?: string;
-  email?: string;
-  error?: string;
-}
-
 export interface VizbeeSignInStatusListener {
   onProgress: (type: string, code?: string) => void;
   onSuccess: (type: string) => void;
@@ -57,17 +39,4 @@ export interface VizbeeAppLifecycleAdapter {
   setAppReady(appReadyModel: AppReadyModel): void;
   clearAppReady(): void;
   getAppReadyModel(): AppReadyModel | null;
-}
-
-export type SignInState =
-  | {type: 'loading'}
-  | {type: 'success'}
-  | {type: 'error'; message: string};
-
-export interface SignInViewModel {
-  regCode: string | null;
-  signInState: SignInState;
-  requestCode: () => Promise<string | undefined>;
-  startPolling: (regCode: string) => void;
-  stopPolling: () => void;
 }

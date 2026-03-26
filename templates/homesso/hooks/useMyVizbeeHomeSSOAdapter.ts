@@ -6,10 +6,7 @@
  */
 
 import {useEffect, useRef} from 'react';
-import {MyVizbeeMvpdRegCodePoller as MvpdRegCodePoller} from '../poller/implementation/MyVizbeeMvpdRegCodePoller';
 import {MyVizbeeAuthManager as AuthManager} from '../auth/MyVizbeeAuthManager';
-import {MyVizbeeAuthRepository as AuthRepository} from '../auth/MyVizbeeAuthRepository';
-import {MyVizbeeSignInCallbackHolder as SignInCallbackHolder} from '../signin/MyVizbeeSignInCallbackHolder';
 import {AppLifecycleListener} from '../MyVizbeeTypes';
 import {
   useVizbeeHomeSSOReceiver,
@@ -22,9 +19,7 @@ import {
 } from 'react-native-vizbee-homesso-receiver-sdk';
 import {AppLifecycleAdapter} from '../applifecycle/AppLifecycleAdapter';
 import {AppReadyModel} from '../applifecycle/AppReadyModel';
-import {SIGN_IN_TYPE, SIGN_IN_TIMEOUT_MS} from '../auth/MyVizbeeAuthManager';
-// TODO: Replace with your video events system
-import VideoEvents from '../VideoEvents';
+import {SIGN_IN_TYPE} from '../auth/MyVizbeeAuthManager';
 
 export const useMyVizbeeHomeSSOAdapter = () => {
   const {initialize, sendProgress, sendSuccess, sendFailure, enableLogging} =
@@ -34,13 +29,10 @@ export const useMyVizbeeHomeSSOAdapter = () => {
   const appReadyModelRef = useRef(new AppReadyModel()).current;
 
   const authManager = useRef(new AuthManager()).current;
-  const authRepository = useRef(new AuthRepository()).current;
-  const regCodePoller = useRef(new MvpdRegCodePoller(authRepository)).current;
   const timeoutRef = useRef<NodeJS.Timeout>();
   const pendingCallbacksRef = useRef<
     {resolve: (value: any) => void; reject: (error: any) => void}[]
   >([]);
-  const signInProgressInfo = useRef<{[key: string]: any} | null>(null);
 
   useEffect(() => {
     // Set up app lifecycle listener for handling app ready/unready states
@@ -88,23 +80,12 @@ export const useMyVizbeeHomeSSOAdapter = () => {
     };
   }, []);
 
-  // Subscribe to video events
-  useEffect(() => {
-    const unsubscribe = VideoEvents.onVideoStopped(() => {
-      // Handle video stopped event
-      appLifecycleAdapter?.setIsVideoPlaying(false);
-    });
-
-    return unsubscribe;
-  }, [appLifecycleAdapter]);
-
   /**
    * Sends current sign-in information to Vizbee
    */
   const sendSignInInfo = async () => {
     // Get current sign-in status and user info
     const signedIn = await authManager.isSignedIn(SIGN_IN_TYPE);
-    const info = await authRepository.getUserInfo();
 
     const mvpdSignInInfo: VizbeeSignInInfo = {
       signInType: SIGN_IN_TYPE,
@@ -112,16 +93,17 @@ export const useMyVizbeeHomeSSOAdapter = () => {
     };
 
     // Include user details if signed in
-    if (signedIn && info) {
-      mvpdSignInInfo['userLogin'] = info?.email;
-      mvpdSignInInfo['userName'] = `name:${info?.email || ''}`;
-      mvpdSignInInfo['userSubscriptionType'] = 'subscriptionType-1';
-      mvpdSignInInfo['userSubscriptionValue'] = 'subscriptionValue-1';
-      mvpdSignInInfo['userSubscriptionRenewalType'] = 'monthly';
-      mvpdSignInInfo['userAdditionalInfo'] = {
-        customKey1: 'customValue1',
-        customKey2: 'customValue2',
-      };
+    if (signedIn) {
+      // CLIENT TODO: Replace with actual user info retrieval
+      // mvpdSignInInfo['userLogin'] = info?.email;
+      // mvpdSignInInfo['userName'] = `name:${info?.email || ''}`;
+      // mvpdSignInInfo['userSubscriptionType'] = 'subscriptionType-1';
+      // mvpdSignInInfo['userSubscriptionValue'] = 'subscriptionValue-1';
+      // mvpdSignInInfo['userSubscriptionRenewalType'] = 'monthly';
+      // mvpdSignInInfo['userAdditionalInfo'] = {
+      //   customKey1: 'customValue1',
+      //   customKey2: 'customValue2',
+      // };
     }
 
     return [mvpdSignInInfo];
@@ -129,62 +111,25 @@ export const useMyVizbeeHomeSSOAdapter = () => {
 
   /**
    * Starts background sign-in process (automatic polling)
+   * CLIENT TODO: Start polling for registration code and handle sign-in flow based on your authentication system. Make sure to call onProgress, onSuccess, and onFailure callbacks based on the polling results and user actions.
+   * Also you can add timeout for the polling process and call onFailure callback if polling exceeds the timeout duration.
    */
   const startBackgroundSignIn = async (signInType: string) => {
-    try {
-      // Request registration code and start polling
-      const code = await regCodePoller.requestCode();
-      onProgress(signInType, code);
-
-      regCodePoller.startPoll(code);
-
-      // Set up completion listener
-      regCodePoller.setOnCheckDoneChangeListener(isDone => {
-        if (isDone) {
-          onSuccess(signInType);
-        }
-      });
-
-      // Set timeout for sign-in process
-      timeoutRef.current = setTimeout(() => {
-        if (appLifecycleAdapter) {
-          onFailure(
-            signInType,
-            'Sign-in timed out',
-            false,
-            new Error('Sign-in timed out'),
-          );
-        }
-      }, SIGN_IN_TIMEOUT_MS);
-    } catch (error) {
-      const err = error as Error;
-      onFailure(signInType, err?.message, false, err);
-    }
+    // Request registration code and start polling
   };
 
   /**
    * Starts foreground sign-in process (show UI to user)
-   * CLIENT TODO: Replace navigation implementation
+   * CLIENT TODO: Replace navigation implementation and ensure your sign-in screen calls the provided callbacks
    */
   const startForegroundSignIn = () => {
-    // Set up callback handlers for the sign-in screen
-    SignInCallbackHolder.setListener({
-      onProgress: (type: string, code?: string) => onProgress(type, code),
-      onSuccess: (type: string) => onSuccess(type),
-      onFailure: (
-        type: string,
-        reason: string,
-        isCancelled: boolean,
-        error: Error | null,
-      ) => onFailure(type, reason, isCancelled, error),
-    });
-
     // CLIENT TODO: Replace with your navigation implementation
     // Navigate to your sign-in screen
     /*
     Example implementations:
     - React Navigation: navigation.navigate('SignIn')
     - React Router: navigate('/signin')
+    - The sign in screen should call onProgress, onSuccess, and onFailure callbacks based on user actions and sign-in results
     */
   };
 
@@ -194,8 +139,6 @@ export const useMyVizbeeHomeSSOAdapter = () => {
   const onProgress = (signInType: string, regCode?: string) => {
     // Send progress update to Vizbee and store current state
     sendProgress(signInType, {regcode: regCode});
-    signInProgressInfo.current = {signInType, regCode};
-    checkIsSignedIn();
   };
 
   /**
@@ -204,15 +147,8 @@ export const useMyVizbeeHomeSSOAdapter = () => {
   const onSuccess = async (signInType: string) => {
     // Clean up sign-in state and send success notification
     appLifecycleAdapter.setIsSignInInProgress(false);
-    const info = await authRepository.getUserInfo();
-    checkIsSignedIn();
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = undefined;
-    }
-
-    sendSuccess(signInType, info?.email || '');
+    const email = ''; // CLIENT TODO: Replace with actual user email if available
+    sendSuccess(signInType, email);
   };
 
   /**
@@ -264,7 +200,6 @@ export const useMyVizbeeHomeSSOAdapter = () => {
         if (!appLifecycleAdapter.getIsSignInInProgress()) {
           // Start new sign-in process
           appLifecycleAdapter.setIsSignInInProgress(true);
-          signInProgressInfo.current = null;
 
           if (senderInfo.isSignedIn) {
             // Sender is signed in, do background sign-in
@@ -275,10 +210,8 @@ export const useMyVizbeeHomeSSOAdapter = () => {
           }
         } else {
           // Sign-in already in progress, send current progress
-          onProgress(
-            signInProgressInfo.current?.signInType,
-            signInProgressInfo.current?.regCode,
-          );
+          // CLIENT TODO: send sign-type and regcode
+          onProgress('<signInType>', '<regCode>');
         }
       },
     });
@@ -299,10 +232,10 @@ export const useMyVizbeeHomeSSOAdapter = () => {
   const stopPollingOnBackPress = () => {
     checkIsSignedIn();
     if (appLifecycleAdapter.getIsSignInInProgress()) {
-      // Stop polling and clean up sign-in state
-      regCodePoller.stopPoll();
       appLifecycleAdapter.setIsSignInInProgress(false);
       // CLIENT TODO: Import VizbeeManager and uncomment when needed
+      // Stop polling and clean up sign-in state
+
       // import { VizbeeManager } from 'react-native-vizbee-receiver-sdk';
       // VizbeeManager.getAppDelegate()?.deeplinkStop();
       sendFailure(SIGN_IN_TYPE, 'User pressed back button', true, null);
@@ -314,26 +247,19 @@ export const useMyVizbeeHomeSSOAdapter = () => {
    */
   const signOut = async () => {
     // Attempt to sign out and update sign-in status
-    return await authRepository
-      .signOut()
-      .then(signOut => {
-        checkIsSignedIn();
-        return signOut ? Promise.resolve(true) : Promise.reject(false);
-      })
-      .catch(error => {
-        return Promise.reject(false);
-      });
   };
 
   /**
    * Gets current user information
    */
   const getUserInfo = async () => {
-    return authRepository.getUserInfo();
+    // CLIENT TODO: Replace with actual user info retrieval logic
+    return {};
   };
 
   const getIsFireTv = () => {
-    return authRepository.isFireTv();
+    // CLIENT TODO: Implement logic to determine if the device is Fire TV
+    return false;
   };
 
   return {
