@@ -87,6 +87,10 @@ android {
         }
     }
 
+    buildFeatures {
+        prefab true
+    }
+
     namespace "com.reactnativeftvatvdemoapp"
     defaultConfig {
         applicationId "com.reactnativeftvatvdemoapp"
@@ -120,11 +124,13 @@ android {
 
 dependencies {
 
-     // Vizbee - Android TV
-   androidTVImplementation "tv.vizbee:androidtv-receiver-sdk:4.2.4"
+    // Vizbee - Android TV
+    androidTVImplementation "tv.vizbee:androidtv-receiver-sdk:+"
    
-   // Vizbee - Fire TV
-   fireTVImplementation "tv.vizbee:firetv-receiver-sdk:4.2.7"
+    // Vizbee - Fire TV
+    fireTVImplementation "tv.vizbee:firetv-receiver-sdk:+"
+
+    implementation "tv.vizbee:receiver-homesso-sdk:+"
 
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")

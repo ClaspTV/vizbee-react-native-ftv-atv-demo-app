@@ -5,9 +5,10 @@ import {
   // @ts-ignore
 } from 'react-native-vizbee-receiver-sdk';
 import {VideoRef} from 'react-native-video';
+import VideoEvents from './utils/VideoEvents';
 
 export class PlayerDelegate extends VizbeePlayerDelegate {
-  videoPlayer: VideoRef;
+  videoPlayer: VideoRef | null;
   video: any;
   currentTime: number;
   videoDuration: number;
@@ -17,10 +18,15 @@ export class PlayerDelegate extends VizbeePlayerDelegate {
     playing: boolean;
     ended: boolean;
     error: boolean;
+    interrupted: boolean;
   };
-  onStopCallback: () => void;
+  onStopCallback: (() => void) | null;
 
-  constructor(videoPlayer: VideoRef, video: any, onStopCallback: () => void) {
+  constructor(
+    videoPlayer: VideoRef | null,
+    video: any,
+    onStopCallback: (() => void) | null,
+  ) {
     super();
     this.videoPlayer = videoPlayer;
     this.video = video;
@@ -32,6 +38,7 @@ export class PlayerDelegate extends VizbeePlayerDelegate {
       playing: false,
       ended: false,
       error: false,
+      interrupted: false,
     };
     this.onStopCallback = onStopCallback;
   }
@@ -70,7 +77,6 @@ export class PlayerDelegate extends VizbeePlayerDelegate {
 
   getVideoInfo(): VizbeeVideoInfo {
     const vizbeeVideoInfo = new VizbeeVideoInfo();
-
     if (this.video) {
       vizbeeVideoInfo.guid = this.video.guid || '';
       vizbeeVideoInfo.title = this.video.title || 'Unknown Title';
@@ -94,6 +100,9 @@ export class PlayerDelegate extends VizbeePlayerDelegate {
       vizbeeVideoStatus.playbackState = 'failed';
     } else if (this.playbackState.ended) {
       vizbeeVideoStatus.playbackState = 'finished';
+    } else if (this.playbackState.interrupted) {
+      vizbeeVideoStatus.playbackState = 'interrupted';
+      VideoEvents.emitInterruptedStatusSent();
     } else {
       vizbeeVideoStatus.playbackState = 'unknown';
     }

@@ -1,73 +1,152 @@
-import React, {useState, useEffect, useRef} from 'react';
-import {View, StyleSheet} from 'react-native';
-//@ts-ignore
-import {VizbeeManager, VizbeeOptions} from 'react-native-vizbee-receiver-sdk';
-import AppDelegate from './src/vizbee/AppDelegate';
-import MainScreen, {Video} from './src/MainScreen';
+import React, {useEffect, useRef} from 'react';
+import {
+  NavigationContainer,
+  NavigationContainerRefWithCurrent,
+  createNavigationContainerRef,
+} from '@react-navigation/native';
+import {
+  createStackNavigator,
+  StackNavigationOptions,
+} from '@react-navigation/stack';
+// @ts-ignore
+import {VizbeeManager} from 'react-native-vizbee-receiver-sdk';
+import {
+  AppDelegate,
+  useHomeSSOAdapter,
+  SignInScreen,
+  AppLifecycleAdapter,
+} from './src/homeSSO';
 import VideoPlayer from './src/VideoPlayer';
+import MainScreen from './src/MainScreen';
+import {RootStackParamList} from './src/types/Types';
+import NavigationManager from './src/utils/NavigationManager';
+import {videos} from './src/data/VideoCatalog';
+import {MVPD_SIGN_IN_TYPE} from './src/homeSSO/constants/constants';
 
 export const VIZBEE_APPID = 'vzb2000001';
 
 const App = () => {
-  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const navigationRef =
+    createNavigationContainerRef<RootStackParamList>() as NavigationContainerRefWithCurrent<RootStackParamList>;
+
+  const Stack = createStackNavigator<RootStackParamList>();
+
   const appDelegateRef = useRef<AppDelegate | null>(null);
+  const isInitializedRef = useRef(false);
 
-  useEffect(() => {
-    appDelegateRef.current = new AppDelegate();
-    // Or creating with constructor
-    const options = new VizbeeOptions({
-      loggingPreference: VizbeeOptions.LoggingPreference.ENABLE_VERBOSE_LEVEL,
-      //configServiceProxyHost: 'cast-config.plex.tv',
-      //shouldInitInBackground: false, // default false
-      // customMetricsAttributes: { appVersion: '1.2.3' },
-    }); 
-    VizbeeManager.init(VIZBEE_APPID, appDelegateRef.current, options);
-    appDelegateRef.current.setOnVideoStartCallback(handleVideoStart);
-    appDelegateRef.current.setIsAppReady(true);
+  const appLifecycleAdapter = AppLifecycleAdapter.getInstance();
 
-    return () => {
-      VizbeeManager.getAppDelegate().setOnVideoStartCallback(null);
-    };
-  }, []);
-
-  const handleVideoSelect = (video: Video) => {
-    setSelectedVideo(video);
-    if (appDelegateRef.current) {
-      appDelegateRef.current.setCurrentlyPlayingVideo(video);
-    }
-  };
+  const {initializeHomeSSO, signOut, getUserInfo, getIsFireTv} =
+    useHomeSSOAdapter();
 
   const handleVideoStart = (videoInfo: any) => {
-    setSelectedVideo(videoInfo);
-    if (appDelegateRef.current) {
-      appDelegateRef.current.setCurrentlyPlayingVideo(videoInfo);
+    const video = videos.find(v => v.guid === videoInfo.guid);
+    if (
+      (video?.requiresAuthentication || false) &&
+      !appLifecycleAdapter.getIsSignedIn()
+    ) {
+      NavigationManager.getInstance().navigate('SignIn', {
+        isClickNavigation: true,
+      });
     }
   };
 
-  const handleCloseVideo = () => {
-    if (appDelegateRef.current) {
-      appDelegateRef.current.setCurrentlyPlayingVideo(null);
+  const handleVideoSelect = (videoInfo: any) => {
+    if (
+      videoInfo.requiresAuthentication &&
+      !appLifecycleAdapter.getIsSignedIn()
+    ) {
+      NavigationManager.getInstance().navigate('SignIn', {
+        isClickNavigation: true,
+      });
+      if (appDelegateRef.current) {
+        appDelegateRef.current.deeplinkStart(videoInfo);
+      }
+    } else {
+      appLifecycleAdapter?.setIsVideoPlaying(true);
+      NavigationManager.getInstance().navigate('VideoPlayer', {
+        guid: videoInfo.guid,
+        title: videoInfo.title,
+        isLive: videoInfo.isLive,
+        videoUrl: videoInfo.videoURL,
+        imageUrl: videoInfo.imageURL,
+        streamType: videoInfo.streamType,
+        position: 0,
+      });
     }
-    setSelectedVideo(null);
+  };
+
+  useEffect(() => {
+    if (!isInitializedRef.current && appLifecycleAdapter) {
+      appDelegateRef.current = new AppDelegate(appLifecycleAdapter);
+
+      VizbeeManager.enableVerboseLogging();
+      VizbeeManager.init(VIZBEE_APPID, appDelegateRef.current);
+      VizbeeManager.enableVerboseLogging();
+      appDelegateRef.current.setOnVideoStartCallback(handleVideoStart);
+      appDelegateRef.current.setIsAppReady(true);
+      appDelegateRef.current.setCanUseIsFirstVideoLogic(!getIsFireTv());
+
+      console.log('Initializing HomeSSO');
+
+      initializeHomeSSO();
+
+      isInitializedRef.current = true;
+    }
+
+    return () => {
+      if (appDelegateRef.current) {
+        console.log('Cleaning up AppDelegate');
+        appDelegateRef.current.setIsAppReady(false);
+        appDelegateRef.current = null;
+      }
+    };
+  }, [initializeHomeSSO, handleVideoStart]);
+
+  const screenOptions: StackNavigationOptions = {
+    headerShown: false,
+    cardStyle: {backgroundColor: '#000'},
+  };
+
+  const signInScreenOptions: StackNavigationOptions = {
+    headerShown: false,
+    cardStyle: {backgroundColor: '#000'},
   };
 
   return (
-    <View style={styles.container}>
-      {selectedVideo ? (
-        <VideoPlayer video={selectedVideo} onClose={handleCloseVideo} />
-      ) : (
-        <MainScreen onVideoSelect={handleVideoSelect} />
-      )}
-    </View>
+    <NavigationContainer
+      ref={navigationRef}
+      onReady={() => {
+        if (navigationRef.current) {
+          NavigationManager.getInstance().setNavigationRef(
+            navigationRef.current,
+          );
+        }
+      }}>
+      <Stack.Navigator initialRouteName="Main" screenOptions={screenOptions}>
+        <Stack.Screen name="Main">
+          {props => (
+            <MainScreen
+              {...props}
+              signOut={signOut}
+              signedUserInfo={getUserInfo}
+              onVideoSelect={handleVideoSelect}
+            />
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="SignIn" options={signInScreenOptions}>
+          {props => <SignInScreen {...props} signInType={MVPD_SIGN_IN_TYPE} />}
+        </Stack.Screen>
+        <Stack.Screen
+          name="VideoPlayer"
+          component={VideoPlayer}
+          options={{
+            headerShown: false,
+          }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#000',
-  },
-});
 
 export default App;
