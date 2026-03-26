@@ -7,11 +7,11 @@
 
 import React, {useEffect} from 'react';
 import {View, Text, StyleSheet, ActivityIndicator} from 'react-native';
-import {AuthRepository} from '../auth/AuthRepository';
-import {useSignInViewModel} from './useSignInViewModel';
-import {SignInCallbackHolder} from './SignInCallbackHolder';
-import {AppLifecycleAdapter} from '../AppLifecycleAdapter';
-import {SignInViewModel} from '../Types';
+import {MyVizbeeAuthRepository as AuthRepository} from '../auth/MyVizbeeAuthRepository';
+import {useMyVizbeeSignInViewModel} from './useMyVizbeeSignInViewModel';
+import {MyVizbeeSignInCallbackHolder as SignInCallbackHolder} from './MyVizbeeSignInCallbackHolder';
+import {AppLifecycleAdapter} from '../applifecycle/AppLifecycleAdapter';
+import {SignInViewModel} from '../MyVizbeeTypes';
 
 interface SignInScreenProps {
   signInType: string;
@@ -20,7 +20,9 @@ interface SignInScreenProps {
   // route?: YourRouteType;
 }
 
-export const SignInScreen: React.FC<SignInScreenProps> = ({signInType}) => {
+export const MyVizbeeSignInScreen: React.FC<SignInScreenProps> = ({
+  signInType,
+}) => {
   let viewModel: SignInViewModel | null = null;
   const authRepository = new AuthRepository();
   const appLifecycleAdapter = AppLifecycleAdapter.getInstance();
@@ -33,7 +35,7 @@ export const SignInScreen: React.FC<SignInScreenProps> = ({signInType}) => {
   const isClickNavigation = false; // Get this from your route params
 
   if (!isClickNavigation) {
-    viewModel = useSignInViewModel(authRepository, signInType);
+    viewModel = useMyVizbeeSignInViewModel(authRepository, signInType);
 
     useEffect(() => {
       if (!viewModel) return;

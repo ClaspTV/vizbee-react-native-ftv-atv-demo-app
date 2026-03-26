@@ -1,5 +1,6 @@
-import {AppReadyModel} from './homesso/AppReadyModel';
+import {AppReadyModel} from './applifecycle/AppReadyModel';
 
+// CLIENT TODO: Replace with your actual interfaces and types based on your application's needs
 export interface VideoInfo {
   guid: string;
   title: string;

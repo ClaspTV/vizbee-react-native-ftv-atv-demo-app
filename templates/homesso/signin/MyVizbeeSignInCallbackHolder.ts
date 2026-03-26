@@ -4,24 +4,24 @@
  * Manages sign-in callback listeners for communication between components
  */
 
-import {VizbeeSignInStatusListener} from '../Types';
+import {VizbeeSignInStatusListener} from '../MyVizbeeTypes';
 
-class SignInCallbackHolder {
+class MyVizbeeSignInCallbackHolder {
   private static listener: VizbeeSignInStatusListener | null = null;
 
   public static setListener(newListener: VizbeeSignInStatusListener): void {
     // Set the current sign-in callback listener
-    SignInCallbackHolder.listener = newListener;
+    MyVizbeeSignInCallbackHolder.listener = newListener;
   }
 
   public static getListener(): VizbeeSignInStatusListener | null {
-    return SignInCallbackHolder.listener;
+    return MyVizbeeSignInCallbackHolder.listener;
   }
 
   public static clearListener(): void {
     // Clear the current sign-in callback listener
-    SignInCallbackHolder.listener = null;
+    MyVizbeeSignInCallbackHolder.listener = null;
   }
 }
 
-export {SignInCallbackHolder};
+export {MyVizbeeSignInCallbackHolder};

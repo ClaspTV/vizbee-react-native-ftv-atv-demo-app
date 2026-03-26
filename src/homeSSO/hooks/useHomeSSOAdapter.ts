@@ -1,4 +1,6 @@
 import {useEffect, useRef} from 'react';
+
+// @ts-ignore
 import {useVizbeeHomeSSOReceiver} from 'react-native-vizbee-homesso-receiver-sdk';
 import {MvpdRegCodePoller} from '../core/MvpdRegCodePoller';
 import {AuthRepository} from '../auth/AuthRepository';
@@ -8,6 +10,7 @@ import {AppLifecycleListener} from '../types';
 import {
   VizbeeSenderSignInInfo,
   VizbeeSignInInfo,
+  // @ts-ignore
 } from 'react-native-vizbee-homesso-receiver-sdk';
 // @ts-ignore
 import {VizbeeManager} from 'react-native-vizbee-receiver-sdk';

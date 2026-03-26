@@ -5,7 +5,15 @@
  * CLIENT TODO: Replace storage implementation
  */
 
-export class AuthManager {
+// ================================
+// 2. Constants.ts
+// ================================
+
+// Client need change this based on their requirements
+export const SIGN_IN_TYPE = 'mvpd';
+export const SIGN_IN_TIMEOUT_MS = 60000; // 1 minute timeout
+
+export class MyVizbeeAuthManager {
   constructor() {
     // Initialize authentication manager
   }

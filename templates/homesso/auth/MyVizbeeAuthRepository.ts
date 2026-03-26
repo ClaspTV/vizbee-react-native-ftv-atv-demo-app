@@ -10,9 +10,9 @@
  * - Network requests
  */
 
-import {RegCode, RegCodePollResult, RegCodePollStatus} from '../Types';
+import {RegCode, RegCodePollResult, RegCodePollStatus} from '../MyVizbeeTypes';
 
-export class AuthRepository {
+export class MyVizbeeAuthRepository {
   private apiBaseUrl: string = 'https://homesso.vizbee.tv';
 
   /**

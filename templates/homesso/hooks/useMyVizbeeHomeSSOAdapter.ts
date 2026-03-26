@@ -6,23 +6,27 @@
  */
 
 import {useEffect, useRef} from 'react';
-import {useVizbeeHomeSSOReceiver} from 'react-native-vizbee-homesso-receiver-sdk';
-import {MvpdRegCodePoller} from '../poller/implementation/MvpdRegCodePoller';
-import {AuthRepository} from '../auth/AuthRepository';
-import {AuthManager} from '../auth/AuthManager';
-import {SignInCallbackHolder} from '../signin/SignInCallbackHolder';
-import {AppLifecycleListener} from '../Types';
+import {MyVizbeeMvpdRegCodePoller as MvpdRegCodePoller} from '../poller/implementation/MyVizbeeMvpdRegCodePoller';
+import {MyVizbeeAuthManager as AuthManager} from '../auth/MyVizbeeAuthManager';
+import {MyVizbeeAuthRepository as AuthRepository} from '../auth/MyVizbeeAuthRepository';
+import {MyVizbeeSignInCallbackHolder as SignInCallbackHolder} from '../signin/MyVizbeeSignInCallbackHolder';
+import {AppLifecycleListener} from '../MyVizbeeTypes';
+import {
+  useVizbeeHomeSSOReceiver,
+  //@ts-ignore
+} from 'react-native-vizbee-homesso-receiver-sdk';
 import {
   VizbeeSenderSignInInfo,
   VizbeeSignInInfo,
+  //@ts-ignore
 } from 'react-native-vizbee-homesso-receiver-sdk';
-import {AppLifecycleAdapter} from '../AppLifecycleAdapter';
-import {AppReadyModel} from '../AppReadyModel';
-import {SIGN_IN_TYPE, SIGN_IN_TIMEOUT_MS} from '../constants';
+import {AppLifecycleAdapter} from '../applifecycle/AppLifecycleAdapter';
+import {AppReadyModel} from '../applifecycle/AppReadyModel';
+import {SIGN_IN_TYPE, SIGN_IN_TIMEOUT_MS} from '../auth/MyVizbeeAuthManager';
 // TODO: Replace with your video events system
 import VideoEvents from '../VideoEvents';
 
-export const useHomeSSOAdapter = () => {
+export const useMyVizbeeHomeSSOAdapter = () => {
   const {initialize, sendProgress, sendSuccess, sendFailure, enableLogging} =
     useVizbeeHomeSSOReceiver();
   const appLifecycleAdapter = AppLifecycleAdapter.getInstance();
@@ -205,6 +209,7 @@ export const useHomeSSOAdapter = () => {
 
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+      timeoutRef.current = undefined;
     }
 
     sendSuccess(signInType, info?.email || '');
@@ -224,6 +229,7 @@ export const useHomeSSOAdapter = () => {
 
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+      timeoutRef.current = undefined;
     }
 
     sendFailure(signInType, reason, isCancelled, error);

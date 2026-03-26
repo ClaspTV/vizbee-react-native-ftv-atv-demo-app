@@ -4,13 +4,13 @@
  * Model representing the ready state of the application
  */
 
-import {DeeplinkManager} from './DeeplinkManager';
+import {MyVizbeeDeeplinkManager} from '../deeplink/MyVizbeeDeeplinkManager';
 
 export class AppReadyModel {
-  public readonly deeplinkManager: DeeplinkManager;
+  public readonly deeplinkManager: MyVizbeeDeeplinkManager;
 
   constructor() {
     // Initialize app ready model with deeplink manager
-    this.deeplinkManager = new DeeplinkManager();
+    this.deeplinkManager = new MyVizbeeDeeplinkManager();
   }
 }

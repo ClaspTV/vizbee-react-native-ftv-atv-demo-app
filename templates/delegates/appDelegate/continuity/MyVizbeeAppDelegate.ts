@@ -6,7 +6,7 @@ import {userManager} from '../../user/userManager';
 import {appAPIConfig} from '../../api/appAPIConfig';
 import {setRecoil} from 'recoil-nexus';
 
-export class MyAppVizbeeAppDelegate extends VizbeeAppDelegate {
+export class MyVizbeeAppDelegate extends VizbeeAppDelegate {
   isAppReady: boolean;
   deferredStartVideo: any;
   isSignInInProgress: boolean;
@@ -165,4 +165,4 @@ export class MyAppVizbeeAppDelegate extends VizbeeAppDelegate {
   }
 }
 
-export default MyAppVizbeeAppDelegate;
+export default MyVizbeeAppDelegate;

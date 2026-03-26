@@ -5,16 +5,16 @@
  * CLIENT TODO: Update video catalog integration
  */
 
-import {AppReadyModel} from './AppReadyModel';
-import {AppLifecycleAdapter} from './AppLifecycleAdapter';
-import {VideoInfo} from './Types';
+import {AppReadyModel} from '../applifecycle/AppReadyModel';
+import {AppLifecycleAdapter} from '../applifecycle/AppLifecycleAdapter';
+import {VideoInfo} from '../MyVizbeeTypes';
 
 interface VideoHandlerAdapterListener {
   canUseIsFirstVideoLogic(): boolean;
   isFirstVideoRequest(): boolean;
 }
 
-export class DeeplinkSignallingManager {
+export class MyVizbeeDeeplinkSignallingManager {
   private deeplinkCallback?: (appReadyModel: AppReadyModel) => void;
   private waitingForSignInCallback?: (appReadyModel: AppReadyModel) => void;
 
@@ -67,38 +67,30 @@ export class DeeplinkSignallingManager {
 
   /**
    * Checks if this is the first video request and handles accordingly
-   * CLIENT TODO: Get video authentication requirement from your system
    */
   private checkIfFirstVideoAndDeeplink(videoInfo: VideoInfo) {
     // Get video authentication requirement from video info or your system
-    // CLIENT TODO: You can get this from:
-    // 1. videoInfo.requiresAuthentication (if available in video metadata)
-    // 2. Your video catalog/CMS system
-    // 3. Your content management configuration
-    // 4. Video content type or genre rules
-
-    const isAuthVideo = videoInfo.requiresAuthentication ?? false;
 
     if (this.adapterListener.canUseIsFirstVideoLogic()) {
       // Check if this is the first video request in the session
-      if (this.adapterListener.isFirstVideoRequest() || isAuthVideo) {
-        this.doSignInProgressCheckAndDeeplink(isAuthVideo);
-      } else if (!isAuthVideo) {
+      if (this.adapterListener.isFirstVideoRequest()) {
+        this.doSignInProgressCheckAndDeeplink();
+      } else {
         // Video doesn't require authentication, deeplink directly
         this.deeplink();
       }
     } else {
-      this.doSignInProgressCheckAndDeeplink(isAuthVideo);
+      this.doSignInProgressCheckAndDeeplink();
     }
   }
 
   /**
    * Checks sign-in progress and handles deeplink accordingly
    */
-  private doSignInProgressCheckAndDeeplink(isAuthVideo: boolean) {
+  private doSignInProgressCheckAndDeeplink() {
     // Add delay since sign-in and start video are asynchronous operations
     setTimeout(() => {
-      if (this.appLifecycleAdapter.getIsSignInInProgress() || isAuthVideo) {
+      if (this.appLifecycleAdapter.getIsSignInInProgress()) {
         // Wait for sign-in to complete before deeplinking
         this.waitForSignInUpdateAndDeeplink();
       } else {

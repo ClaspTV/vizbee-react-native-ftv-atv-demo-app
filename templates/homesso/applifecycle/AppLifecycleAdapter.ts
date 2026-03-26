@@ -4,9 +4,11 @@
  * Manages application lifecycle state and notifies listeners
  */
 
-import React from 'react';
 import {AppReadyModel} from './AppReadyModel';
-import {AppLifecycleListener, VizbeeAppLifecycleAdapter} from './Types';
+import {
+  AppLifecycleListener,
+  VizbeeAppLifecycleAdapter,
+} from '../MyVizbeeTypes';
 
 export class AppLifecycleAdapter implements VizbeeAppLifecycleAdapter {
   private appReadyModel: AppReadyModel | null = null;

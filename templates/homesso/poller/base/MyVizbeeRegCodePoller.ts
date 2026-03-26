@@ -4,10 +4,14 @@
  * Base class for implementing registration code polling functionality
  */
 
-import {AuthRepository} from '../../auth/AuthRepository';
-import {RegCode, RegCodePollResult, RegCodePollStatus} from '../../Types';
+import {MyVizbeeAuthRepository as AuthRepository} from '../../auth/MyVizbeeAuthRepository';
+import {
+  RegCode,
+  RegCodePollResult,
+  RegCodePollStatus,
+} from '../../MyVizbeeTypes';
 
-export abstract class RegCodePoller {
+export abstract class MyVizbeeRegCodePoller {
   private pollTimer?: NodeJS.Timeout;
   private _regCode: string = '';
   private _isCheckDone: boolean = false;

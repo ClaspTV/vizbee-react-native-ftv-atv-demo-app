@@ -10,12 +10,13 @@ import {
   VizbeeVideoInfo,
   VizbeeVideoStatus,
   VizbeeManager,
+  //@ts-ignore
 } from 'react-native-vizbee-receiver-sdk';
 
 // CLIENT TODO: Replace with your video player reference type
 type VideoPlayerRef = any; // Replace with your actual video player ref type
 
-export class MyAppVizbeePlayerDelegate extends VizbeePlayerDelegate {
+export class MyVizbeePlayerDelegate extends VizbeePlayerDelegate {
   videoPlayer: VideoPlayerRef | null | undefined;
 
   constructor(videoPlayer: VideoPlayerRef) {

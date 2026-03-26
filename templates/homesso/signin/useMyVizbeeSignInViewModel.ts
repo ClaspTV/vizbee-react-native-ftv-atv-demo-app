@@ -5,12 +5,12 @@
  */
 
 import {useState, useEffect, useCallback, useRef} from 'react';
-import {AuthRepository} from '../auth/AuthRepository';
-import {MvpdRegCodePoller} from '../poller/implementation/MvpdRegCodePoller';
-import {SignInState, SignInViewModel} from '../Types';
-import {SignInCallbackHolder} from './SignInCallbackHolder';
+import {MyVizbeeAuthRepository as AuthRepository} from '../auth/MyVizbeeAuthRepository';
+import {MyVizbeeMvpdRegCodePoller as MvpdRegCodePoller} from '../poller/implementation/MyVizbeeMvpdRegCodePoller';
+import {SignInState, SignInViewModel} from '../MyVizbeeTypes';
+import {MyVizbeeSignInCallbackHolder as SignInCallbackHolder} from './MyVizbeeSignInCallbackHolder';
 
-export function useSignInViewModel(
+export function useMyVizbeeSignInViewModel(
   authRepository: AuthRepository,
   signInType: string,
 ): SignInViewModel {

@@ -8036,21 +8036,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-vizbee-homesso-receiver-sdk@file:../react-native-vizbee-homesso-receiver-sdk/react-native-vizbee-homesso-receiver-sdk-1.0.0.tgz::locator=vizbee-react-native-ftv-atv-demo-app%40workspace%3A.":
+"react-native-vizbee-homesso-receiver-sdk@npm:^1.0.0":
   version: 1.0.0
-  resolution: "react-native-vizbee-homesso-receiver-sdk@file:../react-native-vizbee-homesso-receiver-sdk/react-native-vizbee-homesso-receiver-sdk-1.0.0.tgz::locator=vizbee-react-native-ftv-atv-demo-app%40workspace%3A."
+  resolution: "react-native-vizbee-homesso-receiver-sdk@npm:1.0.0"
   peerDependencies:
     react-native: ">=0.60.0 <=0.80.1"
-  checksum: 98a0845cce84c0b00509cb1ffc373b686e9307e0f18b3107f5c541e85ab24f733a733cc5ac717a25969b4b4164c4a4c59581d2b34f7cbeb1baa22ecb122a8900
+  checksum: 766b3e6565247dcfa0f963bbb3347cfdeb737dd8b0dd7044c26ec86889363b712d2f3a085e802f6b2aa01059673f34413ecc7632271ab21200062e4179cc280c
   languageName: node
   linkType: hard
 
-"react-native-vizbee-receiver-sdk@file:../react-native-vizbee-receiver-sdk/react-native-vizbee-receiver-sdk-0.0.26.tgz::locator=vizbee-react-native-ftv-atv-demo-app%40workspace%3A.":
+"react-native-vizbee-receiver-sdk@npm:^0.0.26":
   version: 0.0.26
-  resolution: "react-native-vizbee-receiver-sdk@file:../react-native-vizbee-receiver-sdk/react-native-vizbee-receiver-sdk-0.0.26.tgz::locator=vizbee-react-native-ftv-atv-demo-app%40workspace%3A."
+  resolution: "react-native-vizbee-receiver-sdk@npm:0.0.26"
   peerDependencies:
     react-native: ">=0.60.0 <=0.80.1"
-  checksum: 50e0a0b4087c2f335f59abfb23993d104d7d697c12d8e8a7838a96bdfa29406d771eb08da0f932fb039d2bd4a19029e4ed5961caba7296b4f2943d6322b9ba33
+  checksum: f367f68350f769b5da5b14d1802128521395262102a0df97b28b43fc64e9321f43b2dffc42bd4828bf6032b99ae74feec1d1600d5ccf3e03bd139e84539f323a
   languageName: node
   linkType: hard
 
@@ -9513,8 +9513,8 @@ __metadata:
     react-native-safe-area-context: ^5.6.0
     react-native-screens: ^3.33.0
     react-native-video: ^6.6.1
-    react-native-vizbee-homesso-receiver-sdk: "file:../react-native-vizbee-homesso-receiver-sdk/react-native-vizbee-homesso-receiver-sdk-1.0.0.tgz"
-    react-native-vizbee-receiver-sdk: "file:../react-native-vizbee-receiver-sdk/react-native-vizbee-receiver-sdk-0.0.26.tgz"
+    react-native-vizbee-homesso-receiver-sdk: ^1.0.0
+    react-native-vizbee-receiver-sdk: ^0.0.26
     react-test-renderer: 18.3.1
     typescript: 5.0.4
   languageName: unknown

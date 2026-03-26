@@ -5,12 +5,10 @@
  * CLIENT TODO: Replace navigation implementation
  */
 
-import {VideoInfo} from './Types';
-import VideoEvents from './VideoEvents';
+import {VideoInfo} from '../MyVizbeeTypes';
 
-export class DeeplinkManager {
+export class MyVizbeeDeeplinkManager {
   private videoInfo: VideoInfo | null = null;
-  private unsubscribe: any;
 
   constructor() {
     // Initialize deeplink manager

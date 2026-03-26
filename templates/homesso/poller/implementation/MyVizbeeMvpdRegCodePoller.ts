@@ -4,11 +4,11 @@
  * Concrete implementation of RegCodePoller for MVPD authentication
  */
 
-import {RegCodePoller} from '../base/RegCodePoller';
-import {AuthRepository} from '../../auth/AuthRepository';
-import {RegCode} from '../../Types';
+import {MyVizbeeRegCodePoller} from '../base/MyVizbeeRegCodePoller';
+import {MyVizbeeAuthRepository as AuthRepository} from '../../auth/MyVizbeeAuthRepository';
+import {RegCode} from '../../MyVizbeeTypes';
 
-export class MvpdRegCodePoller extends RegCodePoller {
+export class MyVizbeeMvpdRegCodePoller extends MyVizbeeRegCodePoller {
   constructor(authRepository: AuthRepository, pollingInterval: number = 2000) {
     super(authRepository, pollingInterval);
     // Initialize MVPD-specific registration code poller
