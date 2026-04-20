@@ -31,7 +31,7 @@ export const useHomeSSOAdapter = () => {
   const authManager = useRef(new AuthManager()).current;
   const authRepository = useRef(new AuthRepository()).current;
   const regCodePoller = useRef(new MvpdRegCodePoller(authRepository)).current;
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout>(null);
   const pendingCallbacksRef = useRef<
     {
       resolve: (value: any) => void;
@@ -47,7 +47,7 @@ export const useHomeSSOAdapter = () => {
     console.log(`${LOG_TAG}: Setting up app lifecycle listener`);
 
     const listener: AppLifecycleListener = {
-      onAppReady: async (appReadyModel: AppReadyModel) => {
+      onAppReady: async (_appReadyModel: AppReadyModel) => {
         console.log(`${LOG_TAG}: App is ready`);
         appLifecycleAdapter.setIsHomeSSOReady(true);
         checkIsSignedIn();
@@ -92,6 +92,7 @@ export const useHomeSSOAdapter = () => {
       appLifecycleAdapter.clearAppReady();
       appLifecycleAdapter.removeAppLifecycleListener(listener);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Subscribe to video events
@@ -102,6 +103,7 @@ export const useHomeSSOAdapter = () => {
     });
 
     return unsubscribe;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const sendSignInInfo = async () => {
@@ -114,12 +116,13 @@ export const useHomeSSOAdapter = () => {
       isSignedIn: signedIn,
     };
     if (signedIn) {
-      mvpdSignInInfo['userLogin'] = info?.email;
-      mvpdSignInInfo['userName'] = `name:${info?.email || ''}`;
-      mvpdSignInInfo['userSubscriptionType'] = 'subscriptionType-1';
-      mvpdSignInInfo['userSubscriptionValue'] = 'subscriptionValue-1';
-      mvpdSignInInfo['userSubscriptionRenewalType'] = 'monthly';
-      mvpdSignInInfo['userAdditionalInfo'] = {
+      const extendedInfo = mvpdSignInInfo as any;
+      extendedInfo.userLogin = info?.email;
+      extendedInfo.userName = `name:${info?.email || ''}`;
+      extendedInfo.userSubscriptionType = 'subscriptionType-1';
+      extendedInfo.userSubscriptionValue = 'subscriptionValue-1';
+      extendedInfo.userSubscriptionRenewalType = 'monthly';
+      extendedInfo.userAdditionalInfo = {
         customKey1: 'customValue1',
         customKey2: 'customValue2',
       };
@@ -283,9 +286,9 @@ export const useHomeSSOAdapter = () => {
 
     return await authRepository
       .signOut()
-      .then(signOut => {
+      .then(result => {
         checkIsSignedIn();
-        if (signOut) {
+        if (result) {
           return Promise.resolve(true);
         } else {
           return Promise.reject(false);

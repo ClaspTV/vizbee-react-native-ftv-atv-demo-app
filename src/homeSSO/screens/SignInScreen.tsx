@@ -5,7 +5,6 @@ import {AuthRepository} from '../auth/AuthRepository';
 import {useSignInViewModel} from './SignInViewModel';
 import {SignInCallbackHolder} from '../core/SignInCallbackHolder';
 import {RootStackParamList} from '../../types/Types';
-import {SignInViewModel} from '../types';
 import {AppLifecycleAdapter} from '../core/AppLifecycleAdapter';
 
 interface SignInScreenProps {
@@ -14,7 +13,6 @@ interface SignInScreenProps {
 
 export const SignInScreen: React.FC<SignInScreenProps> = ({signInType}) => {
   const appLifecycleAdapter = AppLifecycleAdapter.getInstance();
-  let viewModel: SignInViewModel | null = null;
   const navigation = useNavigation();
   const authRepository = new AuthRepository();
   const route = useRoute();
@@ -22,59 +20,61 @@ export const SignInScreen: React.FC<SignInScreenProps> = ({signInType}) => {
   const isClickNavigation =
     (route.params as RootStackParamList['SignIn'])?.isClickNavigation || false;
 
-  if (!isClickNavigation) {
-    viewModel = useSignInViewModel(authRepository, signInType);
+  const viewModel = useSignInViewModel(authRepository, signInType);
 
-    useEffect(() => {
-      viewModel?.requestCode();
-      appLifecycleAdapter?.setSignInScreenExit(false);
+  useEffect(() => {
+    if (isClickNavigation) return;
+    viewModel.requestCode();
+    appLifecycleAdapter?.setSignInScreenExit(false);
+    return () => {
+      viewModel.stopPolling();
+      SignInCallbackHolder.clearListener();
+      appLifecycleAdapter?.setSignInScreenExit(true);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-      return () => {
-        viewModel?.stopPolling();
-        SignInCallbackHolder.clearListener();
-        appLifecycleAdapter?.setSignInScreenExit(true);
-      };
-    }, []);
+  useEffect(() => {
+    if (isClickNavigation) return;
+    const navigationState = navigation.getState();
+    if (
+      viewModel.signInState.type === 'success' &&
+      navigationState &&
+      navigationState?.routes?.length > 1
+    ) {
+      console.log('Sign-in successful, navigating back');
+      navigation.goBack();
+    }
+  }, [viewModel.signInState, navigation, isClickNavigation]);
 
-    useEffect(() => {
-      const navigationState = navigation.getState();
-      if (
-        viewModel?.signInState.type === 'success' &&
-        navigationState &&
-        navigationState?.routes?.length > 1
-      ) {
-        console.log('Sign-in successful, navigating back');
+  useEffect(() => {
+    if (!isClickNavigation) return;
+    const interval = setInterval(async () => {
+      const isSignedIn = await authRepository.isSignedIn();
+      if (isSignedIn) {
         navigation.goBack();
+        clearInterval(interval);
+      } else {
+        console.log('Still waiting for sign-in via click navigation');
       }
-    }, [viewModel.signInState, navigation]);
-  } else {
-    useEffect(() => {
-      const interval = setInterval(async () => {
-        const isSignedIn = await authRepository.isSignedIn();
-        if (isSignedIn) {
-          navigation.goBack();
-          clearInterval(interval);
-        } else {
-          console.log('Still waiting for sign-in via click navigation');
-        }
-      }, 1000);
-      return () => clearInterval(interval);
-    }, [navigation]);
-  }
+    }, 1000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigation, isClickNavigation]);
 
   return (
     <View style={styles.container}>
-      {viewModel?.signInState.type === 'loading' && (
+      {!isClickNavigation && viewModel.signInState.type === 'loading' && (
         <ActivityIndicator size="large" color="#4A90E2" />
       )}
 
-      {(viewModel?.regCode || isClickNavigation) && (
+      {(viewModel.regCode || isClickNavigation) && (
         <Text style={styles.regCodeText}>
-          Registration Code: {isClickNavigation ? 'XCVF' : viewModel?.regCode}
+          Registration Code: {isClickNavigation ? 'XCVF' : viewModel.regCode}
         </Text>
       )}
 
-      {viewModel?.signInState.type === 'error' && (
+      {!isClickNavigation && viewModel.signInState.type === 'error' && (
         <Text style={styles.errorText}>
           Error: {viewModel.signInState.message}
         </Text>

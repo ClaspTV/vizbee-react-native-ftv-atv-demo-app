@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {StyleSheet, View, TouchableOpacity, Text} from 'react-native';
 import Video, {VideoRef} from 'react-native-video';
 // @ts-ignore
@@ -23,20 +23,21 @@ const VideoPlayer = () => {
   const playerDelegateRef = useRef<PlayerDelegate | null>(null);
 
   // Determine video source from either props or navigation params
-  const video: VideoInfo = {
+  const video: VideoInfo = useMemo(() => ({
     videoURL: route.params?.videoUrl,
     title: route.params?.title,
     imageURL: route.params?.imageUrl,
     guid: route.params?.guid,
     live: route.params?.isLive ?? false,
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [route.params?.videoUrl, route.params?.guid]);
 
   let position = route.params?.position || 0;
 
   // Handle close from both prop callback and navigation
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     navigation.goBack();
-  };
+  }, [navigation]);
 
   useEffect(() => {
     if (videoRef.current && video) {
@@ -57,7 +58,7 @@ const VideoPlayer = () => {
       }
       VideoEvents.emitVideoStopped();
     };
-  }, [video]);
+  }, [video, handleClose]);
 
   const onProgress = (data: {currentTime: number}) => {
     if (playerDelegateRef.current) {

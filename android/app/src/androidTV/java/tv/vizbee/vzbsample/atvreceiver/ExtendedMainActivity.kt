@@ -1,4 +1,4 @@
-package com.reactnativeftvatvdemoapp
+package tv.vizbee.vzbsample.atvreceiver
 
 import android.util.Log
 import android.content.Intent

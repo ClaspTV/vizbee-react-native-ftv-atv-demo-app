@@ -91,9 +91,9 @@ android {
         prefab true
     }
 
-    namespace "com.reactnativeftvatvdemoapp"
+    namespace "tv.vizbee.vzbsample.atvreceiver"
     defaultConfig {
-        applicationId "com.reactnativeftvatvdemoapp"
+        applicationId "tv.vizbee.vzbsample.atvreceiver"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

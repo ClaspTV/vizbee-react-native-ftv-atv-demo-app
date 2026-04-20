@@ -7,6 +7,8 @@ import {
 import {VideoRef} from 'react-native-video';
 import VideoEvents from './utils/VideoEvents';
 
+const LOG_TAG = 'PlayerDelegate';
+
 export class PlayerDelegate extends VizbeePlayerDelegate {
   videoPlayer: VideoRef | null;
   video: any;
@@ -21,6 +23,10 @@ export class PlayerDelegate extends VizbeePlayerDelegate {
     interrupted: boolean;
   };
   onStopCallback: (() => void) | null;
+  private _getVideoInfoCallCount: number;
+  private _getVideoStatusCallCount: number;
+  private _lastGetVideoInfoTs: number;
+  private _lastGetVideoStatusTs: number;
 
   constructor(
     videoPlayer: VideoRef | null,
@@ -41,6 +47,10 @@ export class PlayerDelegate extends VizbeePlayerDelegate {
       interrupted: false,
     };
     this.onStopCallback = onStopCallback;
+    this._getVideoInfoCallCount = 0;
+    this._getVideoStatusCallCount = 0;
+    this._lastGetVideoInfoTs = 0;
+    this._lastGetVideoStatusTs = 0;
   }
 
   onPlay() {
@@ -76,6 +86,15 @@ export class PlayerDelegate extends VizbeePlayerDelegate {
   }
 
   getVideoInfo(): VizbeeVideoInfo {
+    const now = Date.now();
+    const msSinceLast = this._lastGetVideoInfoTs ? now - this._lastGetVideoInfoTs : null;
+    this._getVideoInfoCallCount++;
+    this._lastGetVideoInfoTs = now;
+    console.log(
+      `[${LOG_TAG}] getVideoInfo #${this._getVideoInfoCallCount}` +
+        (msSinceLast !== null ? ` | ${msSinceLast}ms since last call` : ''),
+    );
+
     const vizbeeVideoInfo = new VizbeeVideoInfo();
     if (this.video) {
       vizbeeVideoInfo.guid = this.video.guid || '';
@@ -88,6 +107,15 @@ export class PlayerDelegate extends VizbeePlayerDelegate {
   }
 
   getVideoStatus(): VizbeeVideoStatus {
+    const now = Date.now();
+    const msSinceLast = this._lastGetVideoStatusTs ? now - this._lastGetVideoStatusTs : null;
+    this._getVideoStatusCallCount++;
+    this._lastGetVideoStatusTs = now;
+    console.log(
+      `[${LOG_TAG}] getVideoStatus #${this._getVideoStatusCallCount}` +
+        (msSinceLast !== null ? ` | ${msSinceLast}ms since last call` : ''),
+    );
+
     const vizbeeVideoStatus = new VizbeeVideoStatus();
 
     if (this.playbackState.loading) {

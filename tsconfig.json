@@ -1,4 +1,10 @@
 {
   "extends": "@react-native/typescript-config/tsconfig.json",
-  "exclude": ["templates"]
+  "compilerOptions": {
+    "jsx": "react-native",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src/**/*", "index.js", "index.ts", "App.tsx"],
+  "exclude": ["templates", "node_modules"]
 }

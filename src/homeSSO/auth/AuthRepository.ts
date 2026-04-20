@@ -119,7 +119,6 @@ export class AuthRepository {
 
         const responseText = await response.text();
         const jsonResponse = JSON.parse(responseText);
-        const status = jsonResponse.status;
         console.log('Poll json response:', jsonResponse);
         const result = await this.processRegCodePollResponse(jsonResponse);
         console.log('Poll request result:', result);
@@ -206,7 +205,7 @@ export class AuthRepository {
       } else {
         return null;
       }
-    } catch (error) {
+    } catch {
       return null;
     }
   }

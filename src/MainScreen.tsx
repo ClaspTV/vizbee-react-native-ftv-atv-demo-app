@@ -1,10 +1,10 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {
   StyleSheet,
   View,
   Text,
   Image,
-  TouchableOpacity,
+  Pressable,
   Platform,
   BackHandler,
 } from 'react-native';
@@ -16,7 +16,7 @@ import {AppLifecycleAdapter} from './homeSSO';
 interface MainScreenProps {
   signedUserInfo: () => Promise<User>;
   onVideoSelect: (video: any) => void;
-  signOut: () => Promise<Boolean>;
+  signOut: () => Promise<boolean>;
 }
 
 const MainScreen: React.FC<MainScreenProps> = ({
@@ -36,9 +36,9 @@ const MainScreen: React.FC<MainScreenProps> = ({
   );
 
   useEffect(() => {
-    const handleSignInStatusChange = (isSignedIn: boolean | null) => {
-      if (isSignedIn !== null) {
-        setIsSignedIn(isSignedIn);
+    const handleSignInStatusChange = (newIsSignedIn: boolean | null) => {
+      if (newIsSignedIn !== null) {
+        setIsSignedIn(newIsSignedIn);
       }
     };
 
@@ -49,7 +49,15 @@ const MainScreen: React.FC<MainScreenProps> = ({
     return () => {
       appLifecycleAdapter.removeAppLifecycleListener(listener);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const getUserInfo = useCallback(async () => {
+    const info = await signedUserInfo();
+    if (info?.email) {
+      setUserEmail(info?.email);
+    }
+  }, [signedUserInfo]);
 
   useEffect(() => {
     if (isSignedIn === false) {
@@ -64,11 +72,11 @@ const MainScreen: React.FC<MainScreenProps> = ({
         }, 2000);
       }
     };
-    if (previousSignInState.current == false && isSignedIn) {
+    if (previousSignInState.current === false && isSignedIn) {
       getAndShowWelcome();
     }
     getUserInfo();
-  }, [isSignedIn]);
+  }, [isSignedIn, getUserInfo]);
 
   useEffect(() => {
     const handleBackPress = () => {
@@ -78,24 +86,17 @@ const MainScreen: React.FC<MainScreenProps> = ({
       }
       return false; // Allow default behavior
     };
-    BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+    const subscription = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
 
     return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
+      subscription.remove();
     };
   }, [showMenu]);
 
-  const getUserInfo = async () => {
-    const info = await signedUserInfo();
-    if (info?.email) {
-      setUserEmail(info?.email);
-    }
-  };
-
   const handleSignOut = () => {
     signOut()
-      .then(signOut => {
-        if (signOut) {
+      .then((result: boolean) => {
+        if (result) {
           setShowSuccessMessage(true);
           setTimeout(() => {
             setShowSuccessMessage(false);
@@ -107,7 +108,7 @@ const MainScreen: React.FC<MainScreenProps> = ({
           return Promise.resolve(false);
         }
       })
-      .catch(error => {
+      .catch(() => {
         return Promise.resolve(false);
       });
     appLifecycleAdapter.setIsSignedIn(false);
@@ -118,57 +119,36 @@ const MainScreen: React.FC<MainScreenProps> = ({
     getUserInfo();
   };
 
-  const handleFocus = (itemId: string) => {
-    console.log('Focus on item:', itemId);
-    setFocusedItem(itemId);
-  };
-
-  const handleBlur = () => {
-    if (!showMenu) {
-      setFocusedItem(null);
-    }
-  };
-
-  const getItemStyle = (itemId: string) => {
-    const isFocused = focusedItem === itemId;
-    return {
-      ...styles.videoItem,
-      ...(isFocused ? styles.focusedItem : {}),
-    };
-  };
-
-  const getButtonStyle = () => {
-    const isFocused = focusedItem === 'settingsButton';
-    return {
-      ...styles.settingsButton,
-      ...(isFocused ? styles.focusedButton : {}),
-    };
-  };
-
   return (
     <View style={styles.mainContainer}>
       <View style={styles.header}>
         <Text style={styles.appTitle}>Vizbee Demo App</Text>
-        <TouchableOpacity
+        <Pressable
           onPress={toggleMenu}
-          style={getButtonStyle()}
           hasTVPreferredFocus={Platform.isTV}
-          onFocus={() => handleFocus('settingsButton')}
-          onBlur={handleBlur}>
+          onFocus={() => setFocusedItem('settingsButton')}
+          onBlur={() => setFocusedItem(null)}
+          style={[
+            styles.settingsButton,
+            focusedItem === 'settingsButton' && styles.focusedButton,
+          ]}>
           <Text style={styles.settingsButtonText}>⚙️ Settings</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
       <View style={styles.videoGrid}>
         {videos.map(video => (
-          <TouchableOpacity
+          <Pressable
             key={video.guid}
             onPress={() => onVideoSelect(video)}
-            style={getItemStyle(video.guid)}
-            onFocus={() => handleFocus(video.guid)}
-            onBlur={handleBlur}>
+            onFocus={() => setFocusedItem(video.guid)}
+            onBlur={() => setFocusedItem(null)}
+            style={[
+              styles.videoItem,
+              focusedItem === video.guid && styles.focusedItem,
+            ]}>
             <Image source={{uri: video.imageURL}} style={styles.thumbnail} />
             <Text style={styles.videoTitle}>{video.title}</Text>
-          </TouchableOpacity>
+          </Pressable>
         ))}
       </View>
       {showMenu && (
@@ -271,12 +251,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     marginTop: 8,
     textAlign: 'center',
-  },
-  messageOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   messageContainer: {
     backgroundColor: '#242424',

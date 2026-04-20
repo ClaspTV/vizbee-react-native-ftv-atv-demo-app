@@ -55,7 +55,7 @@ export class DeeplinkSignallingManager {
 
   private checkIfFirstVideoAndDeeplink(videoInfo: VideoInfo) {
     const isAuthVideo =
-      videos.find(video => video.guid == videoInfo.guid)
+      videos.find(video => video.guid === videoInfo.guid)
         ?.requiresAuthentication ?? false;
 
     if (this.adapterListener.canUseIsFirstVideoLogic()) {
@@ -262,7 +262,7 @@ export class AppDelegate
     const videoRequiresAuthentication =
       videos.find(
         (video: VideoInfo | undefined) =>
-          video?.guid == this._isVideoInfo?.guid,
+          video?.guid === this._isVideoInfo?.guid,
       )?.requiresAuthentication ?? false;
     // If the video does not require authentication, we can deeplink directly
     console.log(

@@ -1,5 +1,3 @@
-import { AppLifecycleAdapter } from "../homeSSO";
-
 // types.ts
 export type RootStackParamList = {
   Main: {};

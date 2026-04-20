@@ -1,4 +1,4 @@
-package com.reactnativeftvatvdemoapp
+package tv.vizbee.vzbsample.atvreceiver
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

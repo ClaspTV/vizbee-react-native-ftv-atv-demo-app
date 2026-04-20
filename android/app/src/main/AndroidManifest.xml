@@ -21,7 +21,7 @@
       android:theme="@style/AppTheme"
       android:supportsRtl="true"
       android:networkSecurityConfig="@xml/network_security_config">
-      <meta-data android:name="com.google.android.gms.cast.tv.RECEIVER_OPTIONS_PROVIDER_CLASS_NAME" android:value="com.reactnativeftvatvdemoapp.AppReceiverOptionsProvider"/>
+      <meta-data android:name="com.google.android.gms.cast.tv.RECEIVER_OPTIONS_PROVIDER_CLASS_NAME" android:value="tv.vizbee.vzbsample.atvreceiver.AppReceiverOptionsProvider"/>
       <meta-data android:name="whisperplay" android:resource="@xml/whisperplay"/>
       <activity
         android:name=".ExtendedMainActivity"
@@ -40,7 +40,7 @@
           <action android:name="android.intent.action.VIEW"/>
           <category android:name="android.intent.category.DEFAULT"/>
           <category android:name="android.intent.category.BROWSABLE"/>
-          <data android:scheme="com.reactnativeftvatvdemoapp"/>
+          <data android:scheme="tv.vizbee.vzbsample.atvreceiver"/>
         </intent-filter>
         <!-- To launch the app -->
             <intent-filter>

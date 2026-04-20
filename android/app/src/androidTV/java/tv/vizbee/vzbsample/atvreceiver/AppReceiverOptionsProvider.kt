@@ -1,4 +1,4 @@
-package com.reactnativeftvatvdemoapp
+package tv.vizbee.vzbsample.atvreceiver
 
 import android.content.Context
 import com.google.android.gms.cast.tv.CastReceiverOptions

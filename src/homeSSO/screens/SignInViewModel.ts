@@ -15,7 +15,18 @@ export function useSignInViewModel(
   const regCodePoller = useRef(new MvpdRegCodePoller(authRepository));
   const isCheckDoneListenerSet = useRef(false);
 
+  const checkIsSignedIn = useCallback(async () => {
+    const isSignedIn = await authRepository.isSignedIn();
+    if (isSignedIn) {
+      setSignInState({type: 'success'});
+    } else {
+      setSignInState({type: 'loading'});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
+    const poller = regCodePoller.current;
     const onload = async () => {
       await checkIsSignedIn();
       console.log(
@@ -23,7 +34,7 @@ export function useSignInViewModel(
         !isCheckDoneListenerSet.current,
       );
       if (!isCheckDoneListenerSet.current) {
-        regCodePoller.current.setOnCheckDoneChangeListener(isDone => {
+        poller.setOnCheckDoneChangeListener(isDone => {
           if (isDone) {
             console.log(
               'Sign in successful',
@@ -34,7 +45,7 @@ export function useSignInViewModel(
           }
         });
 
-        regCodePoller.current.setOnRegCodeChangeListener(code => {
+        poller.setOnRegCodeChangeListener(code => {
           console.log('Received new reg code:', code);
           setRegCode(code);
           startPolling(code);
@@ -45,18 +56,9 @@ export function useSignInViewModel(
     };
     onload();
     return () => {
-      regCodePoller.current.removeListeners();
+      poller.removeListeners();
     };
-  }, [signInType]);
-
-  const checkIsSignedIn = useCallback(async () => {
-    const isSignedIn = await authRepository.isSignedIn();
-    if (isSignedIn) {
-      setSignInState({type: 'success'});
-    } else {
-      setSignInState({type: 'loading'});
-    }
-  }, []);
+  }, [signInType, checkIsSignedIn]);
 
   const requestCode = useCallback(async () => {
     try {
@@ -81,12 +83,12 @@ export function useSignInViewModel(
     }
   }, [signInType]);
 
-  const startPolling = (regCode: string | null) => {
+  const startPolling = (newRegCode: string | null) => {
     setSignInState({type: 'loading'});
-    console.log('Starting polling with code:', regCode);
+    console.log('Starting polling with code:', newRegCode);
 
-    if (regCode) {
-      regCodePoller.current.startPoll(regCode);
+    if (newRegCode) {
+      regCodePoller.current.startPoll(newRegCode);
     } else {
       console.log('Code is null, waiting for it to be set');
     }

@@ -4,7 +4,6 @@ import {
   StyleSheet,
   View,
   Text,
-  TouchableOpacity,
   Pressable,
 } from 'react-native';
 import {MenuDialogProps} from './types/MenuDialog';
@@ -21,18 +20,19 @@ export const MenuDialog: React.FC<MenuDialogProps> = ({
   const [isSignedIn, setIsSignedIn] = useState(
     appLifecycleAdapter.getIsSignedIn(),
   );
+  const [focusedButton, setFocusedButton] = useState<string | null>(null);
   const [isSignedInProgress, setIsSignedInProgress] = useState(
     appLifecycleAdapter.getIsSignInInProgress(),
   );
 
   useEffect(() => {
-    const handleSignInStatusChange = (isSignedIn: boolean | null) => {
-      if (isSignedIn !== null) {
-        setIsSignedIn(isSignedIn);
+    const handleSignInStatusChange = (newIsSignedIn: boolean | null) => {
+      if (newIsSignedIn !== null) {
+        setIsSignedIn(newIsSignedIn);
       }
     };
-    const handleSignInProgressChange = (isSignedInProgress: boolean) => {
-      setIsSignedInProgress(isSignedInProgress);
+    const handleSignInProgressChange = (newIsSignedInProgress: boolean) => {
+      setIsSignedInProgress(newIsSignedInProgress);
     };
 
     const listener = {
@@ -44,6 +44,7 @@ export const MenuDialog: React.FC<MenuDialogProps> = ({
     return () => {
       appLifecycleAdapter.removeAppLifecycleListener(listener);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -68,7 +69,7 @@ export const MenuDialog: React.FC<MenuDialogProps> = ({
     });
   };
 
-  const handleSignOutPress = async () => {
+  const handleSignOutPress = () => {
     console.log('MenuDialog handleSignOutPress');
     onClose();
     onSignOut();
@@ -85,20 +86,30 @@ export const MenuDialog: React.FC<MenuDialogProps> = ({
               <Text style={styles.profileText}>
                 {userEmail || 'Signed In User'}
               </Text>
-              <TouchableOpacity
-                style={styles.button}
+              <Pressable
+                style={[
+                  styles.button,
+                  focusedButton === 'signOut' && styles.focusedButton,
+                ]}
                 onPress={handleSignOutPress}
+                onFocus={() => setFocusedButton('signOut')}
+                onBlur={() => setFocusedButton(null)}
                 hasTVPreferredFocus>
                 <Text style={styles.buttonText}>Sign Out</Text>
-              </TouchableOpacity>
+              </Pressable>
             </>
           ) : (
-            <TouchableOpacity
-              style={styles.button}
+            <Pressable
+              style={[
+                styles.button,
+                focusedButton === 'signIn' && styles.focusedButton,
+              ]}
               onPress={handleSignInPress}
+              onFocus={() => setFocusedButton('signIn')}
+              onBlur={() => setFocusedButton(null)}
               hasTVPreferredFocus>
               <Text style={styles.buttonText}>Sign In</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
       </View>
@@ -107,12 +118,6 @@ export const MenuDialog: React.FC<MenuDialogProps> = ({
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   dialogContainer: {
     width: '30%',
     maxWidth: 400,
@@ -132,6 +137,14 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     width: '100%',
     alignItems: 'center',
+  },
+  focusedButton: {
+    backgroundColor: '#2a6abf',
+    transform: [{scale: 1.05}],
+    shadowColor: '#fff',
+    shadowOffset: {width: 0, height: 0},
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
   },
   buttonText: {
     color: '#FFFFFF',
